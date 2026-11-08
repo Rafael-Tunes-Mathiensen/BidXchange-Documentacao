@@ -1,270 +1,2121 @@
-CREATE DATABASE IF NOT EXISTS bxc_db;
-USE bxc_db;
+-- BidXchange | Modelo físico do banco de dados
+-- Base do código: develop, 1aa8783ff1d9ada526b765f3a04bc6244106cbea.
+-- Origem: todas as migrações Django aplicadas em banco PostgreSQL 18 descartável.
+-- Esquema public exportado com pg_dump --schema-only --no-owner --no-privileges --no-comments.
+-- Use psql 18 com ON_ERROR_STOP em banco de estudo vazio para reproduzir o esquema.
+-- Inclui tabelas de infraestrutura Django e estrutura, sem registros ou dados iniciais.
+-- Para executar o aplicativo em um banco novo, use as migrações Django.
+-- Os diagramas conceitual e lógico destacam o domínio. Este arquivo contém o catálogo completo.
+-- Rastreabilidade dos requisitos funcionais vigentes:
+-- RF01/RF02/RF18 | accounts_user, accounts_organization e accounts_organizationmembership.
+-- RF03/RF06/RF11 | quotes_quote, quotes_category e quotes_suppliercategory.
+-- RF07/RF08/RF10 | proposals_proposal, quotes_quote.winning_proposal_id e core_auditevent.
+-- RF14/RF15 | core_supportrequest. RF16/RF17 | proposals_supplierreview.
+-- RF19 | quotes_internalpoll, quotes_polloption, quotes_pollparticipant e quotes_pollvote.
+-- RF20 | quotes_favoritesupplier. O estado de implementação de cada RF consta na matriz de rastreabilidade.
+-- Regras de autorização, prazos e operações de exclusão do ORM complementam o DDL.
 
--- =========================================================
--- TABELA: USUARIO
--- =========================================================
-CREATE TABLE usuario (
-    cd_usuario INT AUTO_INCREMENT PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL,
-    telefone VARCHAR(20),
-    tipo ENUM('ADMIN', 'ESCOLA', 'FORNECEDOR') NOT NULL,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE
+--
+-- PostgreSQL database dump
+--
+
+\restrict XdzXCIirACU7pExZVN1H6thyo63oh4lqNvP6LhcIeQ87wdZ3NBpeoaXPubIxa1a
+
+-- Dumped from database version 18.6
+-- Dumped by pg_dump version 18.6
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+SET default_tablespace = '';
+
+SET default_table_access_method = heap;
+
+--
+-- Name: accounts_authenticationratelimit; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_authenticationratelimit (
+    key character varying(96) NOT NULL,
+    attempts integer NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    CONSTRAINT accounts_authenticationratelimit_attempts_check CHECK ((attempts >= 0))
 );
 
--- =========================================================
--- TABELA: ESTABELECIMENTO
--- =========================================================
-CREATE TABLE estabelecimento (
-    cd_estabelecimento INT AUTO_INCREMENT PRIMARY KEY,
-    cd_usuario INT NOT NULL,
-    cnpj VARCHAR(18) NOT NULL UNIQUE,
-    endereco VARCHAR(255) NOT NULL,
-    razao_social VARCHAR(150) NOT NULL,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT fk_estabelecimento_usuario
-        FOREIGN KEY (cd_usuario)
-        REFERENCES usuario(cd_usuario)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+--
+-- Name: accounts_emailoutbox; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_emailoutbox (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    recipient character varying(100) NOT NULL,
+    subject character varying(255) NOT NULL,
+    text_body text NOT NULL,
+    html_body text NOT NULL,
+    status character varying(10) NOT NULL,
+    attempts smallint NOT NULL,
+    next_attempt_at timestamp with time zone NOT NULL,
+    locked_until timestamp with time zone,
+    sent_at timestamp with time zone,
+    last_error character varying(255) NOT NULL,
+    CONSTRAINT accounts_emailoutbox_attempts_check CHECK ((attempts >= 0))
 );
 
--- =========================================================
--- TABELA: CATEGORIA
--- =========================================================
-CREATE TABLE categoria (
-    cd_categoria INT AUTO_INCREMENT PRIMARY KEY,
-    descricao VARCHAR(100) NOT NULL UNIQUE
+
+--
+-- Name: accounts_emailverificationtoken; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_emailverificationtoken (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    token_hash character varying(64) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone,
+    user_id uuid NOT NULL
 );
 
--- =========================================================
--- TABELA ASSOCIATIVA: ESTABELECIMENTO_CATEGORIA
--- =========================================================
-CREATE TABLE estabelecimento_categoria (
-    cd_estabelecimento INT NOT NULL,
-    cd_categoria INT NOT NULL,
 
-    PRIMARY KEY (cd_estabelecimento, cd_categoria),
+--
+-- Name: accounts_organization; Type: TABLE; Schema: public; Owner: -
+--
 
-    CONSTRAINT fk_estabelecimento_categoria_estabelecimento
-        FOREIGN KEY (cd_estabelecimento)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_estabelecimento_categoria_categoria
-        FOREIGN KEY (cd_categoria)
-        REFERENCES categoria(cd_categoria)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+CREATE TABLE public.accounts_organization (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    kind character varying(20) NOT NULL,
+    legal_name character varying(150) NOT NULL,
+    trade_name character varying(150) NOT NULL,
+    cnpj character varying(14) NOT NULL,
+    email character varying(100) NOT NULL,
+    phone character varying(16) NOT NULL,
+    address character varying(600) NOT NULL,
+    is_verified boolean NOT NULL,
+    is_active boolean NOT NULL,
+    city character varying(100) NOT NULL,
+    complement character varying(100) NOT NULL,
+    district character varying(100) NOT NULL,
+    number character varying(20) NOT NULL,
+    postal_code character varying(8) NOT NULL,
+    state character varying(2) NOT NULL,
+    street character varying(150) NOT NULL,
+    other_supplier_category character varying(100) NOT NULL
 );
 
--- =========================================================
--- TABELA: COTACAO
--- (RF11: status explicito, permite encerrar sem escolher)
--- (RF10: campo cd_proposta_vencedora para referenciar a proposta escolhida)
--- =========================================================
-CREATE TABLE cotacao (
-    cd_cotacao INT AUTO_INCREMENT PRIMARY KEY,
-    cd_estabelecimento INT NOT NULL,
-    cd_categoria INT NOT NULL,
-    cd_proposta_vencedora INT NULL,
-    titulo VARCHAR(150) NOT NULL,
-    descricao TEXT NOT NULL,
-    data_abertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    data_encerramento DATETIME NOT NULL,
-    prazo_entrega DATE NOT NULL,
-    status ENUM('ABERTA', 'ENCERRADA_COM_ESCOLHA', 'ENCERRADA_SEM_ESCOLHA') NOT NULL DEFAULT 'ABERTA',
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT fk_cotacao_estabelecimento
-        FOREIGN KEY (cd_estabelecimento)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
+--
+-- Name: accounts_organizationemailverificationtoken; Type: TABLE; Schema: public; Owner: -
+--
 
-    CONSTRAINT fk_cotacao_categoria
-        FOREIGN KEY (cd_categoria)
-        REFERENCES categoria(cd_categoria)
-        ON DELETE RESTRICT
-        ON UPDATE CASCADE
-);
--- OBS: a FK fk_cotacao_proposta_vencedora eh adicionada apos a criacao
--- da tabela proposta, para evitar referencia circular na criacao das tabelas.
-
--- =========================================================
--- TABELA: PROPOSTA
--- (RF07: confirmacao obrigatoria de emissao de NF/Cupom Fiscal)
--- (RF10: campo vencedora para marcar a proposta escolhida)
--- (RNF04: data_envio para auditoria de data/hora do lance)
--- =========================================================
-CREATE TABLE proposta (
-    cd_proposta INT AUTO_INCREMENT PRIMARY KEY,
-    cd_empresa INT NOT NULL,
-    cd_cotacao INT NOT NULL,
-    valor DECIMAL(10,2) NOT NULL,
-    prazo DATE NOT NULL,
-    forma_pagamento VARCHAR(100) NOT NULL,
-    marca VARCHAR(100),
-    observacoes TEXT,
-    emite_nf BOOLEAN NOT NULL,
-    vencedora BOOLEAN NOT NULL DEFAULT FALSE,
-    data_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT fk_proposta_empresa
-        FOREIGN KEY (cd_empresa)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_proposta_cotacao
-        FOREIGN KEY (cd_cotacao)
-        REFERENCES cotacao(cd_cotacao)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+CREATE TABLE public.accounts_organizationemailverificationtoken (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    email character varying(100) NOT NULL,
+    token_hash character varying(64) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    used_at timestamp with time zone,
+    organization_id uuid CONSTRAINT accounts_organizationemailverification_organization_id_not_null NOT NULL,
+    requested_by_id uuid
 );
 
--- Agora que "proposta" existe, cria-se a FK de cd_proposta_vencedora em cotacao
-ALTER TABLE cotacao
-    ADD CONSTRAINT fk_cotacao_proposta_vencedora
-        FOREIGN KEY (cd_proposta_vencedora)
-        REFERENCES proposta(cd_proposta)
-        ON DELETE SET NULL
-        ON UPDATE CASCADE;
 
--- =========================================================
--- TABELA: NOTIFICACAO
--- =========================================================
-CREATE TABLE notificacao (
-    cd_notificacao INT AUTO_INCREMENT PRIMARY KEY,
-    cd_usuario INT,
-    cd_estabelecimento INT,
-    titulo VARCHAR(150) NOT NULL,
-    descricao TEXT NOT NULL,
-    tipo VARCHAR(50) NOT NULL,
-    data_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    lida BOOLEAN NOT NULL DEFAULT FALSE,
+--
+-- Name: accounts_organizationmembership; Type: TABLE; Schema: public; Owner: -
+--
 
-    CONSTRAINT fk_notificacao_usuario
-        FOREIGN KEY (cd_usuario)
-        REFERENCES usuario(cd_usuario)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_notificacao_estabelecimento
-        FOREIGN KEY (cd_estabelecimento)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+CREATE TABLE public.accounts_organizationmembership (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    role character varying(20) NOT NULL,
+    is_active boolean NOT NULL,
+    organization_id uuid NOT NULL,
+    user_id uuid NOT NULL
 );
 
--- =========================================================
--- TABELA NOVA: AVALIACAO  (RF16 e RF17)
--- Escola avalia o fornecedor apos a conclusao de uma cotacao.
--- =========================================================
-CREATE TABLE avaliacao (
-    cd_avaliacao INT AUTO_INCREMENT PRIMARY KEY,
-    cd_cotacao INT NOT NULL,
-    cd_fornecedor INT NOT NULL,
-    nota TINYINT NOT NULL,
-    comentario TEXT,
-    data_avaliacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    CONSTRAINT chk_avaliacao_nota CHECK (nota BETWEEN 1 AND 5),
+--
+-- Name: accounts_teaminvitation; Type: TABLE; Schema: public; Owner: -
+--
 
-    -- garante uma unica avaliacao por cotacao/fornecedor
-    CONSTRAINT uq_avaliacao_cotacao_fornecedor UNIQUE (cd_cotacao, cd_fornecedor),
-
-    CONSTRAINT fk_avaliacao_cotacao
-        FOREIGN KEY (cd_cotacao)
-        REFERENCES cotacao(cd_cotacao)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_avaliacao_fornecedor
-        FOREIGN KEY (cd_fornecedor)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+CREATE TABLE public.accounts_teaminvitation (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    email character varying(100) NOT NULL,
+    role character varying(20) NOT NULL,
+    token_hash character varying(64) NOT NULL,
+    expires_at timestamp with time zone NOT NULL,
+    sent_at timestamp with time zone NOT NULL,
+    accepted_at timestamp with time zone,
+    revoked_at timestamp with time zone,
+    accepted_by_id uuid,
+    invited_by_id uuid,
+    organization_id uuid NOT NULL
 );
 
--- =========================================================
--- TABELA NOVA: MEMBRO_ESTABELECIMENTO  (RF18)
--- Sub-usuarios da escola, com perfil Solicitante ou Aprovador.
--- =========================================================
-CREATE TABLE membro_estabelecimento (
-    cd_membro INT AUTO_INCREMENT PRIMARY KEY,
-    cd_estabelecimento INT NOT NULL,
-    nome VARCHAR(100) NOT NULL,
-    email VARCHAR(150) NOT NULL UNIQUE,
-    senha VARCHAR(255) NOT NULL,
-    perfil ENUM('SOLICITANTE', 'APROVADOR') NOT NULL,
-    ativo BOOLEAN NOT NULL DEFAULT TRUE,
 
-    CONSTRAINT fk_membro_estabelecimento
-        FOREIGN KEY (cd_estabelecimento)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+--
+-- Name: accounts_user; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_user (
+    password character varying(128) NOT NULL,
+    last_login timestamp with time zone,
+    is_superuser boolean NOT NULL,
+    email character varying(100) NOT NULL,
+    is_staff boolean NOT NULL,
+    is_active boolean NOT NULL,
+    date_joined timestamp with time zone NOT NULL,
+    id uuid NOT NULL,
+    full_name character varying(150) NOT NULL,
+    email_verified_at timestamp with time zone
 );
 
--- =========================================================
--- TABELA NOVA: VOTO_INTERNO  (RF19)
--- Votacao interna dos membros da escola sobre uma cotacao/proposta.
--- =========================================================
-CREATE TABLE voto_interno (
-    cd_voto INT AUTO_INCREMENT PRIMARY KEY,
-    cd_membro INT NOT NULL,
-    cd_cotacao INT NOT NULL,
-    cd_proposta INT NULL,
-    valor TINYINT NOT NULL,
-    data_voto DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    -- cada membro vota uma vez por proposta dentro da mesma cotacao
-    CONSTRAINT uq_voto_membro_proposta UNIQUE (cd_membro, cd_cotacao, cd_proposta),
+--
+-- Name: accounts_user_groups; Type: TABLE; Schema: public; Owner: -
+--
 
-    CONSTRAINT fk_voto_membro
-        FOREIGN KEY (cd_membro)
-        REFERENCES membro_estabelecimento(cd_membro)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_voto_cotacao
-        FOREIGN KEY (cd_cotacao)
-        REFERENCES cotacao(cd_cotacao)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_voto_proposta
-        FOREIGN KEY (cd_proposta)
-        REFERENCES proposta(cd_proposta)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+CREATE TABLE public.accounts_user_groups (
+    id bigint NOT NULL,
+    user_id uuid NOT NULL,
+    group_id integer NOT NULL
 );
 
--- =========================================================
--- TABELA NOVA: ESCOLA_FORNECEDOR_FAVORITO  (RF20)
--- Lista de fornecedores favoritos de cada escola.
--- =========================================================
-CREATE TABLE escola_fornecedor_favorito (
-    cd_escola INT NOT NULL,
-    cd_fornecedor INT NOT NULL,
-    data_favoritado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-    PRIMARY KEY (cd_escola, cd_fornecedor),
+--
+-- Name: accounts_user_groups_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
 
-    CONSTRAINT fk_favorito_escola
-        FOREIGN KEY (cd_escola)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE,
-
-    CONSTRAINT fk_favorito_fornecedor
-        FOREIGN KEY (cd_fornecedor)
-        REFERENCES estabelecimento(cd_estabelecimento)
-        ON DELETE CASCADE
-        ON UPDATE CASCADE
+ALTER TABLE public.accounts_user_groups ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.accounts_user_groups_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
 );
+
+
+--
+-- Name: accounts_user_user_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.accounts_user_user_permissions (
+    id bigint NOT NULL,
+    user_id uuid NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+--
+-- Name: accounts_user_user_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.accounts_user_user_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.accounts_user_user_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_group (
+    id integer NOT NULL,
+    name character varying(150) NOT NULL
+);
+
+
+--
+-- Name: auth_group_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_group ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_group_permissions; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_group_permissions (
+    id bigint NOT NULL,
+    group_id integer NOT NULL,
+    permission_id integer NOT NULL
+);
+
+
+--
+-- Name: auth_group_permissions_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_group_permissions ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_group_permissions_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: auth_permission; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.auth_permission (
+    id integer NOT NULL,
+    name character varying(255) NOT NULL,
+    content_type_id integer NOT NULL,
+    codename character varying(100) NOT NULL
+);
+
+
+--
+-- Name: auth_permission_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.auth_permission ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.auth_permission_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: chat_conversation; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_conversation (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    closed_at timestamp with time zone,
+    opened_by_id uuid NOT NULL,
+    proposal_id uuid NOT NULL
+);
+
+
+--
+-- Name: chat_message; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.chat_message (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    content text NOT NULL,
+    read_at timestamp with time zone,
+    conversation_id uuid NOT NULL,
+    sender_id uuid NOT NULL
+);
+
+
+--
+-- Name: core_auditevent; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.core_auditevent (
+    id uuid NOT NULL,
+    action character varying(100) NOT NULL,
+    target_type character varying(100) NOT NULL,
+    target_id character varying(64) NOT NULL,
+    metadata jsonb NOT NULL,
+    ip_address inet,
+    created_at timestamp with time zone NOT NULL,
+    actor_id uuid
+);
+
+
+--
+-- Name: core_notification; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.core_notification (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    title character varying(150) NOT NULL,
+    description text NOT NULL,
+    kind character varying(50) NOT NULL,
+    target_url character varying(255) NOT NULL,
+    read_at timestamp with time zone,
+    organization_id uuid,
+    recipient_id uuid,
+    CONSTRAINT core_notification_has_target CHECK (((recipient_id IS NOT NULL) OR (organization_id IS NOT NULL)))
+);
+
+
+--
+-- Name: core_supportrequest; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.core_supportrequest (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    subject character varying(150) NOT NULL,
+    description text NOT NULL,
+    response_email character varying(254) NOT NULL,
+    attachment_url character varying(200) NOT NULL,
+    status character varying(20) NOT NULL,
+    response text NOT NULL,
+    responded_at timestamp with time zone,
+    assigned_to_id uuid,
+    requester_id uuid NOT NULL,
+    category_decision character varying(30) NOT NULL,
+    created_category_id uuid,
+    kind character varying(20) NOT NULL,
+    requested_category_name character varying(100) NOT NULL,
+    requested_category_products text NOT NULL
+);
+
+
+--
+-- Name: django_admin_log; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_admin_log (
+    id integer NOT NULL,
+    action_time timestamp with time zone NOT NULL,
+    object_id text,
+    object_repr character varying(200) NOT NULL,
+    action_flag smallint NOT NULL,
+    change_message text NOT NULL,
+    content_type_id integer,
+    user_id uuid NOT NULL,
+    CONSTRAINT django_admin_log_action_flag_check CHECK ((action_flag >= 0))
+);
+
+
+--
+-- Name: django_admin_log_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_admin_log ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_admin_log_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_content_type; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_content_type (
+    id integer NOT NULL,
+    app_label character varying(100) NOT NULL,
+    model character varying(100) NOT NULL
+);
+
+
+--
+-- Name: django_content_type_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_content_type ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_content_type_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_migrations; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_migrations (
+    id bigint NOT NULL,
+    app character varying(255) NOT NULL,
+    name character varying(255) NOT NULL,
+    applied timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: django_migrations_id_seq; Type: SEQUENCE; Schema: public; Owner: -
+--
+
+ALTER TABLE public.django_migrations ALTER COLUMN id ADD GENERATED BY DEFAULT AS IDENTITY (
+    SEQUENCE NAME public.django_migrations_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1
+);
+
+
+--
+-- Name: django_session; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.django_session (
+    session_key character varying(40) NOT NULL,
+    session_data text NOT NULL,
+    expire_date timestamp with time zone NOT NULL
+);
+
+
+--
+-- Name: proposals_proposal; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.proposals_proposal (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    amount numeric(14,2) NOT NULL,
+    delivery_date date NOT NULL,
+    payment_terms character varying(100) NOT NULL,
+    brand character varying(100) NOT NULL,
+    notes text NOT NULL,
+    issues_tax_document boolean NOT NULL,
+    status character varying(15) NOT NULL,
+    submitted_by_id uuid NOT NULL,
+    supersedes_id uuid,
+    supplier_id uuid NOT NULL,
+    quote_id uuid NOT NULL,
+    CONSTRAINT proposals_amount_positive CHECK ((amount > (0)::numeric))
+);
+
+
+--
+-- Name: proposals_supplierreview; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.proposals_supplierreview (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    rating smallint NOT NULL,
+    comment text NOT NULL,
+    evaluator_id uuid NOT NULL,
+    quote_id uuid NOT NULL,
+    supplier_id uuid NOT NULL,
+    CONSTRAINT proposals_review_rating_between_1_5 CHECK (((rating >= 1) AND (rating <= 5))),
+    CONSTRAINT proposals_supplierreview_rating_check CHECK ((rating >= 0))
+);
+
+
+--
+-- Name: quotes_category; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_category (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    name character varying(100) NOT NULL,
+    slug character varying(120) NOT NULL,
+    is_active boolean NOT NULL,
+    description text NOT NULL
+);
+
+
+--
+-- Name: quotes_favoritesupplier; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_favoritesupplier (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    created_by_id uuid NOT NULL,
+    institution_id uuid NOT NULL,
+    supplier_id uuid NOT NULL,
+    CONSTRAINT quotes_favorite_distinct_organizations CHECK ((NOT (institution_id = supplier_id)))
+);
+
+
+--
+-- Name: quotes_internalpoll; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_internalpoll (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    title character varying(150) NOT NULL,
+    description text NOT NULL,
+    closes_at timestamp with time zone NOT NULL,
+    status character varying(10) NOT NULL,
+    closed_at timestamp with time zone,
+    created_by_id uuid NOT NULL,
+    quote_id uuid NOT NULL
+);
+
+
+--
+-- Name: quotes_polloption; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_polloption (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    label character varying(180) NOT NULL,
+    poll_id uuid NOT NULL,
+    proposal_id uuid
+);
+
+
+--
+-- Name: quotes_pollparticipant; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_pollparticipant (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    membership_id uuid NOT NULL,
+    poll_id uuid NOT NULL
+);
+
+
+--
+-- Name: quotes_pollvote; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_pollvote (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    option_id uuid NOT NULL,
+    participant_id uuid NOT NULL
+);
+
+
+--
+-- Name: quotes_quote; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_quote (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    title character varying(150) NOT NULL,
+    description text NOT NULL,
+    quantity numeric(12,3) NOT NULL,
+    unit character varying(30) NOT NULL,
+    urgency character varying(10) NOT NULL,
+    opens_at timestamp with time zone NOT NULL,
+    closes_at timestamp with time zone NOT NULL,
+    delivery_deadline date NOT NULL,
+    status character varying(30) NOT NULL,
+    closed_at timestamp with time zone,
+    category_id uuid NOT NULL,
+    created_by_id uuid NOT NULL,
+    institution_id uuid NOT NULL,
+    winning_proposal_id uuid,
+    decision_preferences jsonb,
+    CONSTRAINT quotes_quote_closes_after_opens CHECK ((closes_at > opens_at)),
+    CONSTRAINT quotes_quote_quantity_positive CHECK ((quantity > (0)::numeric))
+);
+
+
+--
+-- Name: quotes_suppliercategory; Type: TABLE; Schema: public; Owner: -
+--
+
+CREATE TABLE public.quotes_suppliercategory (
+    id uuid NOT NULL,
+    created_at timestamp with time zone NOT NULL,
+    updated_at timestamp with time zone NOT NULL,
+    category_id uuid NOT NULL,
+    supplier_id uuid NOT NULL
+);
+
+
+--
+-- Name: accounts_authenticationratelimit accounts_authenticationratelimit_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_authenticationratelimit
+    ADD CONSTRAINT accounts_authenticationratelimit_pkey PRIMARY KEY (key);
+
+
+--
+-- Name: accounts_emailoutbox accounts_emailoutbox_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_emailoutbox
+    ADD CONSTRAINT accounts_emailoutbox_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_emailverificationtoken accounts_emailverificationtoken_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_emailverificationtoken
+    ADD CONSTRAINT accounts_emailverificationtoken_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_emailverificationtoken accounts_emailverificationtoken_token_hash_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_emailverificationtoken
+    ADD CONSTRAINT accounts_emailverificationtoken_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: accounts_organizationmembership accounts_membership_org_user_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationmembership
+    ADD CONSTRAINT accounts_membership_org_user_unique UNIQUE (organization_id, user_id);
+
+
+--
+-- Name: accounts_organization accounts_organization_cnpj_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organization
+    ADD CONSTRAINT accounts_organization_cnpj_key UNIQUE (cnpj);
+
+
+--
+-- Name: accounts_organization accounts_organization_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organization
+    ADD CONSTRAINT accounts_organization_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_organizationemailverificationtoken accounts_organizationemailverificationtoken_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationemailverificationtoken
+    ADD CONSTRAINT accounts_organizationemailverificationtoken_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_organizationemailverificationtoken accounts_organizationemailverificationtoken_token_hash_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationemailverificationtoken
+    ADD CONSTRAINT accounts_organizationemailverificationtoken_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: accounts_organizationmembership accounts_organizationmembership_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationmembership
+    ADD CONSTRAINT accounts_organizationmembership_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_teaminvitation accounts_teaminvitation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_teaminvitation
+    ADD CONSTRAINT accounts_teaminvitation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_teaminvitation accounts_teaminvitation_token_hash_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_teaminvitation
+    ADD CONSTRAINT accounts_teaminvitation_token_hash_key UNIQUE (token_hash);
+
+
+--
+-- Name: accounts_user accounts_user_email_b2644a56_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user
+    ADD CONSTRAINT accounts_user_email_b2644a56_uniq UNIQUE (email);
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_user_id_group_id_59c0b32f_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_user_id_group_id_59c0b32f_uniq UNIQUE (user_id, group_id);
+
+
+--
+-- Name: accounts_user accounts_user_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user
+    ADD CONSTRAINT accounts_user_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_permi_user_id_permission_id_2ab516c2_uniq UNIQUE (user_id, permission_id);
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_name_key UNIQUE (name);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_permission_id_0cd325b0_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_permission_id_0cd325b0_uniq UNIQUE (group_id, permission_id);
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_group auth_group_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group
+    ADD CONSTRAINT auth_group_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_codename_01ab375a_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_codename_01ab375a_uniq UNIQUE (content_type_id, codename);
+
+
+--
+-- Name: auth_permission auth_permission_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chat_conversation chat_conversation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_conversation
+    ADD CONSTRAINT chat_conversation_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: chat_conversation chat_conversation_proposal_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_conversation
+    ADD CONSTRAINT chat_conversation_proposal_id_key UNIQUE (proposal_id);
+
+
+--
+-- Name: chat_message chat_message_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_message
+    ADD CONSTRAINT chat_message_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: core_auditevent core_auditevent_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_auditevent
+    ADD CONSTRAINT core_auditevent_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: core_notification core_notification_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_notification
+    ADD CONSTRAINT core_notification_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: core_supportrequest core_supportrequest_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_supportrequest
+    ADD CONSTRAINT core_supportrequest_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_admin_log django_admin_log_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_content_type django_content_type_app_label_model_76bd3d3b_uniq; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_app_label_model_76bd3d3b_uniq UNIQUE (app_label, model);
+
+
+--
+-- Name: django_content_type django_content_type_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_content_type
+    ADD CONSTRAINT django_content_type_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_migrations django_migrations_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_migrations
+    ADD CONSTRAINT django_migrations_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: django_session django_session_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_session
+    ADD CONSTRAINT django_session_pkey PRIMARY KEY (session_key);
+
+
+--
+-- Name: proposals_proposal proposals_proposal_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: proposals_proposal proposals_proposal_supersedes_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_supersedes_id_key UNIQUE (supersedes_id);
+
+
+--
+-- Name: proposals_supplierreview proposals_supplierreview_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_supplierreview
+    ADD CONSTRAINT proposals_supplierreview_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: proposals_supplierreview proposals_supplierreview_quote_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_supplierreview
+    ADD CONSTRAINT proposals_supplierreview_quote_id_key UNIQUE (quote_id);
+
+
+--
+-- Name: quotes_category quotes_category_name_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_category
+    ADD CONSTRAINT quotes_category_name_key UNIQUE (name);
+
+
+--
+-- Name: quotes_category quotes_category_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_category
+    ADD CONSTRAINT quotes_category_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_category quotes_category_slug_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_category
+    ADD CONSTRAINT quotes_category_slug_key UNIQUE (slug);
+
+
+--
+-- Name: quotes_favoritesupplier quotes_favorite_institution_supplier_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_favoritesupplier
+    ADD CONSTRAINT quotes_favorite_institution_supplier_unique UNIQUE (institution_id, supplier_id);
+
+
+--
+-- Name: quotes_favoritesupplier quotes_favoritesupplier_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_favoritesupplier
+    ADD CONSTRAINT quotes_favoritesupplier_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_internalpoll quotes_internalpoll_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_internalpoll
+    ADD CONSTRAINT quotes_internalpoll_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_pollvote quotes_one_vote_per_participant; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollvote
+    ADD CONSTRAINT quotes_one_vote_per_participant UNIQUE (participant_id);
+
+
+--
+-- Name: quotes_pollparticipant quotes_poll_participant_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollparticipant
+    ADD CONSTRAINT quotes_poll_participant_unique UNIQUE (poll_id, membership_id);
+
+
+--
+-- Name: quotes_polloption quotes_polloption_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_polloption
+    ADD CONSTRAINT quotes_polloption_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_pollparticipant quotes_pollparticipant_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollparticipant
+    ADD CONSTRAINT quotes_pollparticipant_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_pollvote quotes_pollvote_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollvote
+    ADD CONSTRAINT quotes_pollvote_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_quote quotes_quote_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: quotes_quote quotes_quote_winning_proposal_id_key; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_winning_proposal_id_key UNIQUE (winning_proposal_id);
+
+
+--
+-- Name: quotes_suppliercategory quotes_supplier_category_unique; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_suppliercategory
+    ADD CONSTRAINT quotes_supplier_category_unique UNIQUE (supplier_id, category_id);
+
+
+--
+-- Name: quotes_suppliercategory quotes_suppliercategory_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_suppliercategory
+    ADD CONSTRAINT quotes_suppliercategory_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: accounts_authenticationratelimit_expires_at_736bac56; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_authenticationratelimit_expires_at_736bac56 ON public.accounts_authenticationratelimit USING btree (expires_at);
+
+
+--
+-- Name: accounts_authenticationratelimit_key_5bacb43f_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_authenticationratelimit_key_5bacb43f_like ON public.accounts_authenticationratelimit USING btree (key varchar_pattern_ops);
+
+
+--
+-- Name: accounts_em_status_943736_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_em_status_943736_idx ON public.accounts_emailoutbox USING btree (status, next_attempt_at);
+
+
+--
+-- Name: accounts_em_user_id_c2db2f_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_em_user_id_c2db2f_idx ON public.accounts_emailverificationtoken USING btree (user_id, used_at, expires_at);
+
+
+--
+-- Name: accounts_emailoutbox_status_04a61298; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_emailoutbox_status_04a61298 ON public.accounts_emailoutbox USING btree (status);
+
+
+--
+-- Name: accounts_emailoutbox_status_04a61298_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_emailoutbox_status_04a61298_like ON public.accounts_emailoutbox USING btree (status varchar_pattern_ops);
+
+
+--
+-- Name: accounts_emailverificationtoken_token_hash_c34c21f7_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_emailverificationtoken_token_hash_c34c21f7_like ON public.accounts_emailverificationtoken USING btree (token_hash varchar_pattern_ops);
+
+
+--
+-- Name: accounts_emailverificationtoken_user_id_4ff4e6c5; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_emailverificationtoken_user_id_4ff4e6c5 ON public.accounts_emailverificationtoken USING btree (user_id);
+
+
+--
+-- Name: accounts_one_active_owner_per_org; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX accounts_one_active_owner_per_org ON public.accounts_organizationmembership USING btree (organization_id) WHERE (is_active AND ((role)::text = 'OWNER'::text));
+
+
+--
+-- Name: accounts_one_pending_invite_per_org_email; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX accounts_one_pending_invite_per_org_email ON public.accounts_teaminvitation USING btree (organization_id, email) WHERE ((accepted_at IS NULL) AND (revoked_at IS NULL));
+
+
+--
+-- Name: accounts_or_kind_ce63d3_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_or_kind_ce63d3_idx ON public.accounts_organization USING btree (kind, is_active);
+
+
+--
+-- Name: accounts_or_organiz_974de3_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_or_organiz_974de3_idx ON public.accounts_organizationemailverificationtoken USING btree (organization_id, used_at, expires_at);
+
+
+--
+-- Name: accounts_or_user_id_57f7c7_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_or_user_id_57f7c7_idx ON public.accounts_organizationmembership USING btree (user_id, is_active);
+
+
+--
+-- Name: accounts_organization_cnpj_7b1f774a_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organization_cnpj_7b1f774a_like ON public.accounts_organization USING btree (cnpj varchar_pattern_ops);
+
+
+--
+-- Name: accounts_organizationema_token_hash_08548911_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organizationema_token_hash_08548911_like ON public.accounts_organizationemailverificationtoken USING btree (token_hash varchar_pattern_ops);
+
+
+--
+-- Name: accounts_organizationemail_organization_id_78a51b80; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organizationemail_organization_id_78a51b80 ON public.accounts_organizationemailverificationtoken USING btree (organization_id);
+
+
+--
+-- Name: accounts_organizationemail_requested_by_id_d3ae7f9a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organizationemail_requested_by_id_d3ae7f9a ON public.accounts_organizationemailverificationtoken USING btree (requested_by_id);
+
+
+--
+-- Name: accounts_organizationmembership_organization_id_c57f0637; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organizationmembership_organization_id_c57f0637 ON public.accounts_organizationmembership USING btree (organization_id);
+
+
+--
+-- Name: accounts_organizationmembership_user_id_8cbb5f64; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_organizationmembership_user_id_8cbb5f64 ON public.accounts_organizationmembership USING btree (user_id);
+
+
+--
+-- Name: accounts_te_email_0bc777_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_te_email_0bc777_idx ON public.accounts_teaminvitation USING btree (email, expires_at);
+
+
+--
+-- Name: accounts_te_organiz_c3e1d3_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_te_organiz_c3e1d3_idx ON public.accounts_teaminvitation USING btree (organization_id, accepted_at, revoked_at);
+
+
+--
+-- Name: accounts_teaminvitation_accepted_by_id_4f3f88b6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_teaminvitation_accepted_by_id_4f3f88b6 ON public.accounts_teaminvitation USING btree (accepted_by_id);
+
+
+--
+-- Name: accounts_teaminvitation_invited_by_id_e33e4227; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_teaminvitation_invited_by_id_e33e4227 ON public.accounts_teaminvitation USING btree (invited_by_id);
+
+
+--
+-- Name: accounts_teaminvitation_organization_id_16d9397a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_teaminvitation_organization_id_16d9397a ON public.accounts_teaminvitation USING btree (organization_id);
+
+
+--
+-- Name: accounts_teaminvitation_token_hash_93742140_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_teaminvitation_token_hash_93742140_like ON public.accounts_teaminvitation USING btree (token_hash varchar_pattern_ops);
+
+
+--
+-- Name: accounts_user_email_b2644a56_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_email_b2644a56_like ON public.accounts_user USING btree (email varchar_pattern_ops);
+
+
+--
+-- Name: accounts_user_email_ci_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX accounts_user_email_ci_unique ON public.accounts_user USING btree (lower((email)::text)) WHERE (NOT ((email)::text = ''::text));
+
+
+--
+-- Name: accounts_user_groups_group_id_bd11a704; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_groups_group_id_bd11a704 ON public.accounts_user_groups USING btree (group_id);
+
+
+--
+-- Name: accounts_user_groups_user_id_52b62117; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_groups_user_id_52b62117 ON public.accounts_user_groups USING btree (user_id);
+
+
+--
+-- Name: accounts_user_user_permissions_permission_id_113bb443; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_user_permissions_permission_id_113bb443 ON public.accounts_user_user_permissions USING btree (permission_id);
+
+
+--
+-- Name: accounts_user_user_permissions_user_id_e4f0a161; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX accounts_user_user_permissions_user_id_e4f0a161 ON public.accounts_user_user_permissions USING btree (user_id);
+
+
+--
+-- Name: auth_group_name_a6ea08ec_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_name_a6ea08ec_like ON public.auth_group USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: auth_group_permissions_group_id_b120cbf9; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_permissions_group_id_b120cbf9 ON public.auth_group_permissions USING btree (group_id);
+
+
+--
+-- Name: auth_group_permissions_permission_id_84c5c92e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_group_permissions_permission_id_84c5c92e ON public.auth_group_permissions USING btree (permission_id);
+
+
+--
+-- Name: auth_permission_content_type_id_2f476e4b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX auth_permission_content_type_id_2f476e4b ON public.auth_permission USING btree (content_type_id);
+
+
+--
+-- Name: chat_conversation_opened_by_id_c31fe673; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_conversation_opened_by_id_c31fe673 ON public.chat_conversation USING btree (opened_by_id);
+
+
+--
+-- Name: chat_messag_convers_3154fc_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_messag_convers_3154fc_idx ON public.chat_message USING btree (conversation_id, created_at);
+
+
+--
+-- Name: chat_message_conversation_id_a1207bf4; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_message_conversation_id_a1207bf4 ON public.chat_message USING btree (conversation_id);
+
+
+--
+-- Name: chat_message_sender_id_991c686c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX chat_message_sender_id_991c686c ON public.chat_message USING btree (sender_id);
+
+
+--
+-- Name: core_audite_action_3957f4_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_audite_action_3957f4_idx ON public.core_auditevent USING btree (action, created_at);
+
+
+--
+-- Name: core_audite_target__8673ce_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_audite_target__8673ce_idx ON public.core_auditevent USING btree (target_type, target_id);
+
+
+--
+-- Name: core_auditevent_actor_id_3bd0c673; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_auditevent_actor_id_3bd0c673 ON public.core_auditevent USING btree (actor_id);
+
+
+--
+-- Name: core_notifi_organiz_36e04c_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_notifi_organiz_36e04c_idx ON public.core_notification USING btree (organization_id, read_at);
+
+
+--
+-- Name: core_notifi_recipie_43dea6_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_notifi_recipie_43dea6_idx ON public.core_notification USING btree (recipient_id, read_at);
+
+
+--
+-- Name: core_notification_organization_id_1f3d240b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_notification_organization_id_1f3d240b ON public.core_notification USING btree (organization_id);
+
+
+--
+-- Name: core_notification_recipient_id_24a3d95c; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_notification_recipient_id_24a3d95c ON public.core_notification USING btree (recipient_id);
+
+
+--
+-- Name: core_suppor_status_f631e0_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_suppor_status_f631e0_idx ON public.core_supportrequest USING btree (status, created_at);
+
+
+--
+-- Name: core_supportrequest_assigned_to_id_cc889460; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_supportrequest_assigned_to_id_cc889460 ON public.core_supportrequest USING btree (assigned_to_id);
+
+
+--
+-- Name: core_supportrequest_created_category_id_588db87b; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_supportrequest_created_category_id_588db87b ON public.core_supportrequest USING btree (created_category_id);
+
+
+--
+-- Name: core_supportrequest_requester_id_1b110a21; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX core_supportrequest_requester_id_1b110a21 ON public.core_supportrequest USING btree (requester_id);
+
+
+--
+-- Name: django_admin_log_content_type_id_c4bce8eb; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_admin_log_content_type_id_c4bce8eb ON public.django_admin_log USING btree (content_type_id);
+
+
+--
+-- Name: django_admin_log_user_id_c564eba6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_admin_log_user_id_c564eba6 ON public.django_admin_log USING btree (user_id);
+
+
+--
+-- Name: django_session_expire_date_a5c62663; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_session_expire_date_a5c62663 ON public.django_session USING btree (expire_date);
+
+
+--
+-- Name: django_session_session_key_c0390e0f_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX django_session_session_key_c0390e0f_like ON public.django_session USING btree (session_key varchar_pattern_ops);
+
+
+--
+-- Name: proposals_one_active_per_supplier_quote; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX proposals_one_active_per_supplier_quote ON public.proposals_proposal USING btree (quote_id, supplier_id) WHERE ((status)::text = 'ACTIVE'::text);
+
+
+--
+-- Name: proposals_p_quote_i_17b008_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_p_quote_i_17b008_idx ON public.proposals_proposal USING btree (quote_id, status, amount);
+
+
+--
+-- Name: proposals_p_supplie_4f0843_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_p_supplie_4f0843_idx ON public.proposals_proposal USING btree (supplier_id, created_at);
+
+
+--
+-- Name: proposals_proposal_quote_id_1609244d; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_proposal_quote_id_1609244d ON public.proposals_proposal USING btree (quote_id);
+
+
+--
+-- Name: proposals_proposal_submitted_by_id_55418e40; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_proposal_submitted_by_id_55418e40 ON public.proposals_proposal USING btree (submitted_by_id);
+
+
+--
+-- Name: proposals_proposal_supplier_id_d572b462; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_proposal_supplier_id_d572b462 ON public.proposals_proposal USING btree (supplier_id);
+
+
+--
+-- Name: proposals_s_supplie_a628ec_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_s_supplie_a628ec_idx ON public.proposals_supplierreview USING btree (supplier_id, created_at);
+
+
+--
+-- Name: proposals_supplierreview_evaluator_id_53b40010; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_supplierreview_evaluator_id_53b40010 ON public.proposals_supplierreview USING btree (evaluator_id);
+
+
+--
+-- Name: proposals_supplierreview_supplier_id_c522dc87; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX proposals_supplierreview_supplier_id_c522dc87 ON public.proposals_supplierreview USING btree (supplier_id);
+
+
+--
+-- Name: quotes_category_name_367ecfbf_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_category_name_367ecfbf_like ON public.quotes_category USING btree (name varchar_pattern_ops);
+
+
+--
+-- Name: quotes_category_slug_8fa9525d_like; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_category_slug_8fa9525d_like ON public.quotes_category USING btree (slug varchar_pattern_ops);
+
+
+--
+-- Name: quotes_favoritesupplier_created_by_id_830ad59e; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_favoritesupplier_created_by_id_830ad59e ON public.quotes_favoritesupplier USING btree (created_by_id);
+
+
+--
+-- Name: quotes_favoritesupplier_institution_id_88ad83c6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_favoritesupplier_institution_id_88ad83c6 ON public.quotes_favoritesupplier USING btree (institution_id);
+
+
+--
+-- Name: quotes_favoritesupplier_supplier_id_43a1d747; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_favoritesupplier_supplier_id_43a1d747 ON public.quotes_favoritesupplier USING btree (supplier_id);
+
+
+--
+-- Name: quotes_inte_status_2a84e7_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_inte_status_2a84e7_idx ON public.quotes_internalpoll USING btree (status, closes_at);
+
+
+--
+-- Name: quotes_internalpoll_created_by_id_7956fa6f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_internalpoll_created_by_id_7956fa6f ON public.quotes_internalpoll USING btree (created_by_id);
+
+
+--
+-- Name: quotes_internalpoll_quote_id_cddfa451; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_internalpoll_quote_id_cddfa451 ON public.quotes_internalpoll USING btree (quote_id);
+
+
+--
+-- Name: quotes_poll_option_free_label_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX quotes_poll_option_free_label_unique ON public.quotes_polloption USING btree (poll_id, label) WHERE (proposal_id IS NULL);
+
+
+--
+-- Name: quotes_poll_option_proposal_unique; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE UNIQUE INDEX quotes_poll_option_proposal_unique ON public.quotes_polloption USING btree (poll_id, proposal_id) WHERE (proposal_id IS NOT NULL);
+
+
+--
+-- Name: quotes_polloption_poll_id_45271748; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_polloption_poll_id_45271748 ON public.quotes_polloption USING btree (poll_id);
+
+
+--
+-- Name: quotes_polloption_proposal_id_4948eac6; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_polloption_proposal_id_4948eac6 ON public.quotes_polloption USING btree (proposal_id);
+
+
+--
+-- Name: quotes_pollparticipant_membership_id_f5185e05; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_pollparticipant_membership_id_f5185e05 ON public.quotes_pollparticipant USING btree (membership_id);
+
+
+--
+-- Name: quotes_pollparticipant_poll_id_10bc6f8f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_pollparticipant_poll_id_10bc6f8f ON public.quotes_pollparticipant USING btree (poll_id);
+
+
+--
+-- Name: quotes_pollvote_option_id_dfaa3731; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_pollvote_option_id_dfaa3731 ON public.quotes_pollvote USING btree (option_id);
+
+
+--
+-- Name: quotes_pollvote_participant_id_3d9ec557; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_pollvote_participant_id_3d9ec557 ON public.quotes_pollvote USING btree (participant_id);
+
+
+--
+-- Name: quotes_quot_categor_7b2fda_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quot_categor_7b2fda_idx ON public.quotes_quote USING btree (category_id, status);
+
+
+--
+-- Name: quotes_quot_institu_417ce5_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quot_institu_417ce5_idx ON public.quotes_quote USING btree (institution_id, status);
+
+
+--
+-- Name: quotes_quot_status_7f23bf_idx; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quot_status_7f23bf_idx ON public.quotes_quote USING btree (status, closes_at);
+
+
+--
+-- Name: quotes_quote_category_id_f356a19f; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quote_category_id_f356a19f ON public.quotes_quote USING btree (category_id);
+
+
+--
+-- Name: quotes_quote_created_by_id_b80ac27a; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quote_created_by_id_b80ac27a ON public.quotes_quote USING btree (created_by_id);
+
+
+--
+-- Name: quotes_quote_institution_id_0b668587; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_quote_institution_id_0b668587 ON public.quotes_quote USING btree (institution_id);
+
+
+--
+-- Name: quotes_suppliercategory_category_id_90bfaa82; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_suppliercategory_category_id_90bfaa82 ON public.quotes_suppliercategory USING btree (category_id);
+
+
+--
+-- Name: quotes_suppliercategory_supplier_id_3fe20508; Type: INDEX; Schema: public; Owner: -
+--
+
+CREATE INDEX quotes_suppliercategory_supplier_id_3fe20508 ON public.quotes_suppliercategory USING btree (supplier_id);
+
+
+--
+-- Name: accounts_emailverificationtoken accounts_emailverifi_user_id_4ff4e6c5_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_emailverificationtoken
+    ADD CONSTRAINT accounts_emailverifi_user_id_4ff4e6c5_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_organizationemailverificationtoken accounts_organizatio_organization_id_78a51b80_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationemailverificationtoken
+    ADD CONSTRAINT accounts_organizatio_organization_id_78a51b80_fk_accounts_ FOREIGN KEY (organization_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_organizationmembership accounts_organizatio_organization_id_c57f0637_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationmembership
+    ADD CONSTRAINT accounts_organizatio_organization_id_c57f0637_fk_accounts_ FOREIGN KEY (organization_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_organizationemailverificationtoken accounts_organizatio_requested_by_id_d3ae7f9a_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationemailverificationtoken
+    ADD CONSTRAINT accounts_organizatio_requested_by_id_d3ae7f9a_fk_accounts_ FOREIGN KEY (requested_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_organizationmembership accounts_organizatio_user_id_8cbb5f64_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_organizationmembership
+    ADD CONSTRAINT accounts_organizatio_user_id_8cbb5f64_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_teaminvitation accounts_teaminvitat_accepted_by_id_4f3f88b6_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_teaminvitation
+    ADD CONSTRAINT accounts_teaminvitat_accepted_by_id_4f3f88b6_fk_accounts_ FOREIGN KEY (accepted_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_teaminvitation accounts_teaminvitat_invited_by_id_e33e4227_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_teaminvitation
+    ADD CONSTRAINT accounts_teaminvitat_invited_by_id_e33e4227_fk_accounts_ FOREIGN KEY (invited_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_teaminvitation accounts_teaminvitat_organization_id_16d9397a_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_teaminvitation
+    ADD CONSTRAINT accounts_teaminvitat_organization_id_16d9397a_fk_accounts_ FOREIGN KEY (organization_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_group_id_bd11a704_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_group_id_bd11a704_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_groups accounts_user_groups_user_id_52b62117_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_groups
+    ADD CONSTRAINT accounts_user_groups_user_id_52b62117_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_p_permission_id_113bb443_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_p_permission_id_113bb443_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: accounts_user_user_permissions accounts_user_user_p_user_id_e4f0a161_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.accounts_user_user_permissions
+    ADD CONSTRAINT accounts_user_user_p_user_id_e4f0a161_fk_accounts_ FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissio_permission_id_84c5c92e_fk_auth_perm; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissio_permission_id_84c5c92e_fk_auth_perm FOREIGN KEY (permission_id) REFERENCES public.auth_permission(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_group_permissions auth_group_permissions_group_id_b120cbf9_fk_auth_group_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_group_permissions
+    ADD CONSTRAINT auth_group_permissions_group_id_b120cbf9_fk_auth_group_id FOREIGN KEY (group_id) REFERENCES public.auth_group(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: auth_permission auth_permission_content_type_id_2f476e4b_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.auth_permission
+    ADD CONSTRAINT auth_permission_content_type_id_2f476e4b_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: chat_conversation chat_conversation_opened_by_id_c31fe673_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_conversation
+    ADD CONSTRAINT chat_conversation_opened_by_id_c31fe673_fk_accounts_user_id FOREIGN KEY (opened_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: chat_conversation chat_conversation_proposal_id_c412fa89_fk_proposals_proposal_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_conversation
+    ADD CONSTRAINT chat_conversation_proposal_id_c412fa89_fk_proposals_proposal_id FOREIGN KEY (proposal_id) REFERENCES public.proposals_proposal(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: chat_message chat_message_conversation_id_a1207bf4_fk_chat_conversation_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_message
+    ADD CONSTRAINT chat_message_conversation_id_a1207bf4_fk_chat_conversation_id FOREIGN KEY (conversation_id) REFERENCES public.chat_conversation(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: chat_message chat_message_sender_id_991c686c_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.chat_message
+    ADD CONSTRAINT chat_message_sender_id_991c686c_fk_accounts_user_id FOREIGN KEY (sender_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_auditevent core_auditevent_actor_id_3bd0c673_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_auditevent
+    ADD CONSTRAINT core_auditevent_actor_id_3bd0c673_fk_accounts_user_id FOREIGN KEY (actor_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_notification core_notification_organization_id_1f3d240b_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_notification
+    ADD CONSTRAINT core_notification_organization_id_1f3d240b_fk_accounts_ FOREIGN KEY (organization_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_notification core_notification_recipient_id_24a3d95c_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_notification
+    ADD CONSTRAINT core_notification_recipient_id_24a3d95c_fk_accounts_user_id FOREIGN KEY (recipient_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_supportrequest core_supportrequest_assigned_to_id_cc889460_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_supportrequest
+    ADD CONSTRAINT core_supportrequest_assigned_to_id_cc889460_fk_accounts_user_id FOREIGN KEY (assigned_to_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_supportrequest core_supportrequest_created_category_id_588db87b_fk_quotes_ca; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_supportrequest
+    ADD CONSTRAINT core_supportrequest_created_category_id_588db87b_fk_quotes_ca FOREIGN KEY (created_category_id) REFERENCES public.quotes_category(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: core_supportrequest core_supportrequest_requester_id_1b110a21_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.core_supportrequest
+    ADD CONSTRAINT core_supportrequest_requester_id_1b110a21_fk_accounts_user_id FOREIGN KEY (requester_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_content_type_id_c4bce8eb_fk_django_co; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_content_type_id_c4bce8eb_fk_django_co FOREIGN KEY (content_type_id) REFERENCES public.django_content_type(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: django_admin_log django_admin_log_user_id_c564eba6_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.django_admin_log
+    ADD CONSTRAINT django_admin_log_user_id_c564eba6_fk_accounts_user_id FOREIGN KEY (user_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_proposal proposals_proposal_quote_id_1609244d_fk_quotes_quote_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_quote_id_1609244d_fk_quotes_quote_id FOREIGN KEY (quote_id) REFERENCES public.quotes_quote(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_proposal proposals_proposal_submitted_by_id_55418e40_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_submitted_by_id_55418e40_fk_accounts_user_id FOREIGN KEY (submitted_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_proposal proposals_proposal_supersedes_id_236c9417_fk_proposals; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_supersedes_id_236c9417_fk_proposals FOREIGN KEY (supersedes_id) REFERENCES public.proposals_proposal(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_proposal proposals_proposal_supplier_id_d572b462_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_proposal
+    ADD CONSTRAINT proposals_proposal_supplier_id_d572b462_fk_accounts_ FOREIGN KEY (supplier_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_supplierreview proposals_supplierre_evaluator_id_53b40010_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_supplierreview
+    ADD CONSTRAINT proposals_supplierre_evaluator_id_53b40010_fk_accounts_ FOREIGN KEY (evaluator_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_supplierreview proposals_supplierre_supplier_id_c522dc87_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_supplierreview
+    ADD CONSTRAINT proposals_supplierre_supplier_id_c522dc87_fk_accounts_ FOREIGN KEY (supplier_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: proposals_supplierreview proposals_supplierreview_quote_id_287a3eb6_fk_quotes_quote_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.proposals_supplierreview
+    ADD CONSTRAINT proposals_supplierreview_quote_id_287a3eb6_fk_quotes_quote_id FOREIGN KEY (quote_id) REFERENCES public.quotes_quote(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_favoritesupplier quotes_favoritesuppl_created_by_id_830ad59e_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_favoritesupplier
+    ADD CONSTRAINT quotes_favoritesuppl_created_by_id_830ad59e_fk_accounts_ FOREIGN KEY (created_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_favoritesupplier quotes_favoritesuppl_institution_id_88ad83c6_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_favoritesupplier
+    ADD CONSTRAINT quotes_favoritesuppl_institution_id_88ad83c6_fk_accounts_ FOREIGN KEY (institution_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_favoritesupplier quotes_favoritesuppl_supplier_id_43a1d747_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_favoritesupplier
+    ADD CONSTRAINT quotes_favoritesuppl_supplier_id_43a1d747_fk_accounts_ FOREIGN KEY (supplier_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_internalpoll quotes_internalpoll_created_by_id_7956fa6f_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_internalpoll
+    ADD CONSTRAINT quotes_internalpoll_created_by_id_7956fa6f_fk_accounts_user_id FOREIGN KEY (created_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_internalpoll quotes_internalpoll_quote_id_cddfa451_fk_quotes_quote_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_internalpoll
+    ADD CONSTRAINT quotes_internalpoll_quote_id_cddfa451_fk_quotes_quote_id FOREIGN KEY (quote_id) REFERENCES public.quotes_quote(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_polloption quotes_polloption_poll_id_45271748_fk_quotes_internalpoll_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_polloption
+    ADD CONSTRAINT quotes_polloption_poll_id_45271748_fk_quotes_internalpoll_id FOREIGN KEY (poll_id) REFERENCES public.quotes_internalpoll(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_polloption quotes_polloption_proposal_id_4948eac6_fk_proposals_proposal_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_polloption
+    ADD CONSTRAINT quotes_polloption_proposal_id_4948eac6_fk_proposals_proposal_id FOREIGN KEY (proposal_id) REFERENCES public.proposals_proposal(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_pollparticipant quotes_pollparticipa_membership_id_f5185e05_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollparticipant
+    ADD CONSTRAINT quotes_pollparticipa_membership_id_f5185e05_fk_accounts_ FOREIGN KEY (membership_id) REFERENCES public.accounts_organizationmembership(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_pollparticipant quotes_pollparticipa_poll_id_10bc6f8f_fk_quotes_in; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollparticipant
+    ADD CONSTRAINT quotes_pollparticipa_poll_id_10bc6f8f_fk_quotes_in FOREIGN KEY (poll_id) REFERENCES public.quotes_internalpoll(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_pollvote quotes_pollvote_option_id_dfaa3731_fk_quotes_polloption_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollvote
+    ADD CONSTRAINT quotes_pollvote_option_id_dfaa3731_fk_quotes_polloption_id FOREIGN KEY (option_id) REFERENCES public.quotes_polloption(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_pollvote quotes_pollvote_participant_id_3d9ec557_fk_quotes_po; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_pollvote
+    ADD CONSTRAINT quotes_pollvote_participant_id_3d9ec557_fk_quotes_po FOREIGN KEY (participant_id) REFERENCES public.quotes_pollparticipant(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_quote quotes_quote_category_id_f356a19f_fk_quotes_category_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_category_id_f356a19f_fk_quotes_category_id FOREIGN KEY (category_id) REFERENCES public.quotes_category(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_quote quotes_quote_created_by_id_b80ac27a_fk_accounts_user_id; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_created_by_id_b80ac27a_fk_accounts_user_id FOREIGN KEY (created_by_id) REFERENCES public.accounts_user(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_quote quotes_quote_institution_id_0b668587_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_institution_id_0b668587_fk_accounts_ FOREIGN KEY (institution_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_quote quotes_quote_winning_proposal_id_485a2ad6_fk_proposals; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_quote
+    ADD CONSTRAINT quotes_quote_winning_proposal_id_485a2ad6_fk_proposals FOREIGN KEY (winning_proposal_id) REFERENCES public.proposals_proposal(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_suppliercategory quotes_suppliercateg_category_id_90bfaa82_fk_quotes_ca; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_suppliercategory
+    ADD CONSTRAINT quotes_suppliercateg_category_id_90bfaa82_fk_quotes_ca FOREIGN KEY (category_id) REFERENCES public.quotes_category(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- Name: quotes_suppliercategory quotes_suppliercateg_supplier_id_3fe20508_fk_accounts_; Type: FK CONSTRAINT; Schema: public; Owner: -
+--
+
+ALTER TABLE ONLY public.quotes_suppliercategory
+    ADD CONSTRAINT quotes_suppliercateg_supplier_id_3fe20508_fk_accounts_ FOREIGN KEY (supplier_id) REFERENCES public.accounts_organization(id) DEFERRABLE INITIALLY DEFERRED;
+
+
+--
+-- PostgreSQL database dump complete
+--
+
+\unrestrict XdzXCIirACU7pExZVN1H6thyo63oh4lqNvP6LhcIeQ87wdZ3NBpeoaXPubIxa1a

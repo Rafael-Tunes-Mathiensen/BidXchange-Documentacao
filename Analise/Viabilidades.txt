@@ -1,11 +1,19 @@
-Viabilidade legal:
-https://1drv.ms/w/c/3834ecd2bee7570e/IQAltfwUvn3ITp0ZbpPfZ-zZAbU9jbxCltZj83dK534fvwc?e=rTKbes
+ÍNDICE E SÍNTESE DAS VIABILIDADES DO BIDXCHANGE
+Base técnica: develop 1aa8783. Revisão de 7 nov. 2026.
 
-Viabilidade econômica:
-https://1drv.ms/w/c/3834ecd2bee7570e/IQCnoG1tMMykR6aK4FEZT9yCATZd788_1Z5PAuiYKZux0Q4?e=I5xnce
+A análise de viabilidade examina as condições para desenvolver, operar e manter o projeto e orientar a decisão sobre um piloto. Consulte as versões revisadas pelos caminhos relativos abaixo.
 
-**Viabilidade operacional:**
-https://1drv.ms/w/c/3834ecd2bee7570e/IQAsjW8LdI3qR6wRTzoLLUSwAcUcQVneI4U6ALGs_hFs3Zo?e=GGQDcq
+Técnica — ../Viabilidades/ViabilidadeTecnica.docx
+O núcleo web tem suporte no código. Capacidade, compatibilidade e recuperação dependem da verificação em ambiente controlado.
 
-**Viabilidade técnica:**
-https://1drv.ms/w/c/3834ecd2bee7570e/IQDrow-fVElyQbOreq3U10NuAXj8lF4gPXEcI-czuF5S8Mc?e=jl1d1O
+Operacional — ../Viabilidades/ViabilidadeOperacional.docx
+O piloto precisa validar o fluxo com representantes autorizados, as responsabilidades, a adesão e o suporte.
+
+Econômica — ../Viabilidades/ViabilidadeEconomica.docx
+O custo de operação precisa de apuração por período. Receita e ponto de equilíbrio permanecem como hipóteses sem comprovação.
+
+Legal — ../Viabilidades/ViabilidadeLegal.docx
+Para cada instituição, verificar o tratamento de dados e o regime de compra conforme o programa e a origem dos recursos.
+
+Conclusão geral
+A implementação documentada permite preparar um piloto controlado. A ampliação depende de comprovar capacidade, adesão, custos e enquadramento das compras. As versões vinculadas ao OneDrive constam no histórico a408888 da documentação de origem, e seu conteúdo não foi usado como evidência desta revisão.

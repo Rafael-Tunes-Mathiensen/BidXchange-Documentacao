@@ -1,1 +1,34 @@
-https://trello.com/invite/b/6a1d9f02de7e3ea5fac2bedc/ATTId1061784fb048caefb38df646ca83097AAD60B8C/lean-canvas
+LEAN CANVAS DO BIDXCHANGE
+Proposta revisada em 7 nov. 2026 com base no código develop 1aa8783.
+O conteúdo do quadro de origem ficou sem conferência. A revisão apresenta os nove blocos em texto, com hipóteses a verificar no piloto.
+
+1 PROBLEMA
+Orçamentos dispersos, comparação manual de condições e baixa visibilidade de demandas para fornecedores. Alternativas existentes: e-mail, telefone, planilha e ferramentas gerais de cotação.
+
+2 SEGMENTOS DE CLIENTES
+Equipes administrativas de instituições de ensino, APMs autorizadas e fornecedores. Perfil inicial a testar: instituições com cotações recorrentes e fornecedores aptos a atender na mesma região.
+
+3 PROPOSTA ÚNICA DE VALOR
+Concentrar demanda, propostas e decisão em um registro de cotação consultável pelas partes autorizadas.
+
+4 SOLUÇÃO
+Publicação de cotações, envio de propostas, comparação de preço, prazo e condições, seleção humana e conversa privada após a seleção.
+
+5 CANAIS
+Aplicação web, demonstrações com instituições e contato direto com fornecedores do piloto. O efeito de cada canal sobre adesão é hipótese.
+
+6 FONTES DE RECEITA
+Assinatura institucional é hipótese de teste. Receita de operação e disposição a pagar seguem sem comprovação. O cenário base considera receita zero.
+
+7 ESTRUTURA DE CUSTOS
+Infraestrutura, e-mail, suporte, manutenção e tempo da equipe. Separar desembolso e dedicação própria.
+
+8 MÉTRICAS PRINCIPAIS
+Instituições com cotação publicada, fornecedores com proposta válida, cotações com seleção registrada, mediana de propostas válidas por cotação e tempo entre publicação e seleção. Excluir dados de teste e documentar a janela de apuração.
+
+9 VANTAGEM DIFÍCIL DE COPIAR
+Em aberto. Um histórico útil e a adesão recorrente de instituições e fornecedores são hipóteses que dependem de evidência de uso.
+
+Fontes
+MAURYA, Ash. What is a Lean Canvas? 22 fev. 2024. Disponível em: https://ashmaurya.com/blog/what-is-lean-canvas. Acesso em: 7 nov. 2026.
+BIDXCHANGE. Visão geral do produto. https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/1aa8783ff1d9ada526b765f3a04bc6244106cbea/README.md. Acesso em: 7 nov. 2026.

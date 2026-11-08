@@ -1,1 +1,35 @@
-https://trello.com/b/3zXzDmts/canva-model-business
+BUSINESS MODEL CANVAS DO BIDXCHANGE
+Proposta revisada em 7 nov. 2026 com base no código develop 1aa8783.
+Registro de origem: https://trello.com/b/3zXzDmts/canva-model-business
+Os nove blocos do quadro original foram conferidos em 7 nov. 2026. A síntese preserva as hipóteses históricas e atualiza a descrição do produto com a versão de referência.
+
+1 SEGMENTOS DE CLIENTES
+Equipes administrativas de instituições de ensino e representantes autorizados de APMs como compradores. Fornecedores de produtos e serviços como ofertantes. Para um piloto com recursos públicos, confirmar primeiro o regime da compra.
+
+2 PROPOSTAS DE VALOR
+Para a instituição, centralizar a cotação, comparar condições e registrar a escolha. Para o fornecedor, encontrar oportunidades e enviar ou atualizar propostas. Validar em campo o tempo poupado e a qualidade das comparações.
+
+3 CANAIS
+A plataforma web é o canal do produto. O quadro propõe demonstrações, reuniões com gestores e fornecedores, divulgação digital e participação em eventos. Esses canais são hipóteses de aquisição a testar no piloto.
+
+4 RELACIONAMENTO COM CLIENTES
+Cadastro, gestão de equipes, notificações, chat após seleção e suporte pela plataforma. O quadro propõe atendimento direto, treinamento e coleta de sugestões de usuários para orientar melhorias. A capacidade de manter esse atendimento deve ser avaliada no piloto.
+
+5 FONTES DE RECEITA
+Receita e preço ainda não validados. O quadro reúne hipóteses de mensalidade institucional, assinatura ou taxa de participação de fornecedores e cobrança por negociações concluídas. Para um piloto, testar primeiro disposição a pagar por assinatura institucional, sem tratar as demais opções como decisões aprovadas. O cenário base considera receita zero até haver comprovação de cobrança.
+
+6 RECURSOS PRINCIPAIS
+Código e documentação, equipe, hospedagem, PostgreSQL, e-mail e, quando habilitado, serviço Redis para tempo real.
+
+7 ATIVIDADES PRINCIPAIS
+Manter e testar os fluxos, cadastrar organizações, apoiar o piloto, monitorar a operação e conferir as regras aplicáveis às compras atendidas.
+
+8 PARCERIAS PRINCIPAIS
+Instituições e fornecedores participantes do piloto são parceiros potenciais. Hospedagem, banco e e-mail são serviços de infraestrutura. O quadro menciona associações educacionais, prefeituras e órgãos administrativos como possíveis parceiros. A inspeção não identificou compromissos de parceria firmados.
+
+9 ESTRUTURA DE CUSTOS
+Hospedagem, banco, e-mail, domínio, suporte, capacitação e tempo da equipe. Detalhar por período e separar desembolso de custo de oportunidade, conforme a viabilidade econômica.
+
+Fontes
+STRATEGYZER. The Business Model Canvas. https://www.strategyzer.com/library/the-business-model-canvas. Acesso em: 7 nov. 2026.
+BIDXCHANGE. Visão geral e tecnologias. https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/1aa8783ff1d9ada526b765f3a04bc6244106cbea/README.md. Acesso em: 7 nov. 2026.
