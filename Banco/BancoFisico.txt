@@ -1,0 +1,270 @@
+CREATE DATABASE IF NOT EXISTS bxc_db;
+USE bxc_db;
+
+-- =========================================================
+-- TABELA: USUARIO
+-- =========================================================
+CREATE TABLE usuario (
+    cd_usuario INT AUTO_INCREMENT PRIMARY KEY,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    telefone VARCHAR(20),
+    tipo ENUM('ADMIN', 'ESCOLA', 'FORNECEDOR') NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE
+);
+
+-- =========================================================
+-- TABELA: ESTABELECIMENTO
+-- =========================================================
+CREATE TABLE estabelecimento (
+    cd_estabelecimento INT AUTO_INCREMENT PRIMARY KEY,
+    cd_usuario INT NOT NULL,
+    cnpj VARCHAR(18) NOT NULL UNIQUE,
+    endereco VARCHAR(255) NOT NULL,
+    razao_social VARCHAR(150) NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT fk_estabelecimento_usuario
+        FOREIGN KEY (cd_usuario)
+        REFERENCES usuario(cd_usuario)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA: CATEGORIA
+-- =========================================================
+CREATE TABLE categoria (
+    cd_categoria INT AUTO_INCREMENT PRIMARY KEY,
+    descricao VARCHAR(100) NOT NULL UNIQUE
+);
+
+-- =========================================================
+-- TABELA ASSOCIATIVA: ESTABELECIMENTO_CATEGORIA
+-- =========================================================
+CREATE TABLE estabelecimento_categoria (
+    cd_estabelecimento INT NOT NULL,
+    cd_categoria INT NOT NULL,
+
+    PRIMARY KEY (cd_estabelecimento, cd_categoria),
+
+    CONSTRAINT fk_estabelecimento_categoria_estabelecimento
+        FOREIGN KEY (cd_estabelecimento)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_estabelecimento_categoria_categoria
+        FOREIGN KEY (cd_categoria)
+        REFERENCES categoria(cd_categoria)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA: COTACAO
+-- (RF11: status explicito, permite encerrar sem escolher)
+-- (RF10: campo cd_proposta_vencedora para referenciar a proposta escolhida)
+-- =========================================================
+CREATE TABLE cotacao (
+    cd_cotacao INT AUTO_INCREMENT PRIMARY KEY,
+    cd_estabelecimento INT NOT NULL,
+    cd_categoria INT NOT NULL,
+    cd_proposta_vencedora INT NULL,
+    titulo VARCHAR(150) NOT NULL,
+    descricao TEXT NOT NULL,
+    data_abertura DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    data_encerramento DATETIME NOT NULL,
+    prazo_entrega DATE NOT NULL,
+    status ENUM('ABERTA', 'ENCERRADA_COM_ESCOLHA', 'ENCERRADA_SEM_ESCOLHA') NOT NULL DEFAULT 'ABERTA',
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT fk_cotacao_estabelecimento
+        FOREIGN KEY (cd_estabelecimento)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_cotacao_categoria
+        FOREIGN KEY (cd_categoria)
+        REFERENCES categoria(cd_categoria)
+        ON DELETE RESTRICT
+        ON UPDATE CASCADE
+);
+-- OBS: a FK fk_cotacao_proposta_vencedora eh adicionada apos a criacao
+-- da tabela proposta, para evitar referencia circular na criacao das tabelas.
+
+-- =========================================================
+-- TABELA: PROPOSTA
+-- (RF07: confirmacao obrigatoria de emissao de NF/Cupom Fiscal)
+-- (RF10: campo vencedora para marcar a proposta escolhida)
+-- (RNF04: data_envio para auditoria de data/hora do lance)
+-- =========================================================
+CREATE TABLE proposta (
+    cd_proposta INT AUTO_INCREMENT PRIMARY KEY,
+    cd_empresa INT NOT NULL,
+    cd_cotacao INT NOT NULL,
+    valor DECIMAL(10,2) NOT NULL,
+    prazo DATE NOT NULL,
+    forma_pagamento VARCHAR(100) NOT NULL,
+    marca VARCHAR(100),
+    observacoes TEXT,
+    emite_nf BOOLEAN NOT NULL,
+    vencedora BOOLEAN NOT NULL DEFAULT FALSE,
+    data_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT fk_proposta_empresa
+        FOREIGN KEY (cd_empresa)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_proposta_cotacao
+        FOREIGN KEY (cd_cotacao)
+        REFERENCES cotacao(cd_cotacao)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- Agora que "proposta" existe, cria-se a FK de cd_proposta_vencedora em cotacao
+ALTER TABLE cotacao
+    ADD CONSTRAINT fk_cotacao_proposta_vencedora
+        FOREIGN KEY (cd_proposta_vencedora)
+        REFERENCES proposta(cd_proposta)
+        ON DELETE SET NULL
+        ON UPDATE CASCADE;
+
+-- =========================================================
+-- TABELA: NOTIFICACAO
+-- =========================================================
+CREATE TABLE notificacao (
+    cd_notificacao INT AUTO_INCREMENT PRIMARY KEY,
+    cd_usuario INT,
+    cd_estabelecimento INT,
+    titulo VARCHAR(150) NOT NULL,
+    descricao TEXT NOT NULL,
+    tipo VARCHAR(50) NOT NULL,
+    data_envio DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    lida BOOLEAN NOT NULL DEFAULT FALSE,
+
+    CONSTRAINT fk_notificacao_usuario
+        FOREIGN KEY (cd_usuario)
+        REFERENCES usuario(cd_usuario)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_notificacao_estabelecimento
+        FOREIGN KEY (cd_estabelecimento)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA NOVA: AVALIACAO  (RF16 e RF17)
+-- Escola avalia o fornecedor apos a conclusao de uma cotacao.
+-- =========================================================
+CREATE TABLE avaliacao (
+    cd_avaliacao INT AUTO_INCREMENT PRIMARY KEY,
+    cd_cotacao INT NOT NULL,
+    cd_fornecedor INT NOT NULL,
+    nota TINYINT NOT NULL,
+    comentario TEXT,
+    data_avaliacao DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT chk_avaliacao_nota CHECK (nota BETWEEN 1 AND 5),
+
+    -- garante uma unica avaliacao por cotacao/fornecedor
+    CONSTRAINT uq_avaliacao_cotacao_fornecedor UNIQUE (cd_cotacao, cd_fornecedor),
+
+    CONSTRAINT fk_avaliacao_cotacao
+        FOREIGN KEY (cd_cotacao)
+        REFERENCES cotacao(cd_cotacao)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_avaliacao_fornecedor
+        FOREIGN KEY (cd_fornecedor)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA NOVA: MEMBRO_ESTABELECIMENTO  (RF18)
+-- Sub-usuarios da escola, com perfil Solicitante ou Aprovador.
+-- =========================================================
+CREATE TABLE membro_estabelecimento (
+    cd_membro INT AUTO_INCREMENT PRIMARY KEY,
+    cd_estabelecimento INT NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    email VARCHAR(150) NOT NULL UNIQUE,
+    senha VARCHAR(255) NOT NULL,
+    perfil ENUM('SOLICITANTE', 'APROVADOR') NOT NULL,
+    ativo BOOLEAN NOT NULL DEFAULT TRUE,
+
+    CONSTRAINT fk_membro_estabelecimento
+        FOREIGN KEY (cd_estabelecimento)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA NOVA: VOTO_INTERNO  (RF19)
+-- Votacao interna dos membros da escola sobre uma cotacao/proposta.
+-- =========================================================
+CREATE TABLE voto_interno (
+    cd_voto INT AUTO_INCREMENT PRIMARY KEY,
+    cd_membro INT NOT NULL,
+    cd_cotacao INT NOT NULL,
+    cd_proposta INT NULL,
+    valor TINYINT NOT NULL,
+    data_voto DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    -- cada membro vota uma vez por proposta dentro da mesma cotacao
+    CONSTRAINT uq_voto_membro_proposta UNIQUE (cd_membro, cd_cotacao, cd_proposta),
+
+    CONSTRAINT fk_voto_membro
+        FOREIGN KEY (cd_membro)
+        REFERENCES membro_estabelecimento(cd_membro)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_voto_cotacao
+        FOREIGN KEY (cd_cotacao)
+        REFERENCES cotacao(cd_cotacao)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_voto_proposta
+        FOREIGN KEY (cd_proposta)
+        REFERENCES proposta(cd_proposta)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
+
+-- =========================================================
+-- TABELA NOVA: ESCOLA_FORNECEDOR_FAVORITO  (RF20)
+-- Lista de fornecedores favoritos de cada escola.
+-- =========================================================
+CREATE TABLE escola_fornecedor_favorito (
+    cd_escola INT NOT NULL,
+    cd_fornecedor INT NOT NULL,
+    data_favoritado DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (cd_escola, cd_fornecedor),
+
+    CONSTRAINT fk_favorito_escola
+        FOREIGN KEY (cd_escola)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE,
+
+    CONSTRAINT fk_favorito_fornecedor
+        FOREIGN KEY (cd_fornecedor)
+        REFERENCES estabelecimento(cd_estabelecimento)
+        ON DELETE CASCADE
+        ON UPDATE CASCADE
+);
