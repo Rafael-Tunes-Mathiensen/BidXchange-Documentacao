@@ -2,6 +2,14 @@
 
 Cartão Trello 071. Documento alinhado ao código da branch `main` do BidXchange.
 
+**Como ler este documento.** Cada afirmação pertence a uma de três camadas:
+
+- **Código**: o que os módulos Python implementam.
+- **Configuração versionada**: o que está em arquivos do repositório (`vercel.json`, `settings.py`).
+- **Implantação real**: o que de fato roda em produção. **Esta camada não é
+  demonstrável pelo repositório** e só pode ser confirmada no painel da Vercel e
+  nos logs do ambiente. Nenhuma afirmação sobre produção é presumida aqui.
+
 ## 1. Visão geral
 
 O BidXchange **não usa um broker de filas dedicado** (Celery, RQ ou similar) nem
@@ -57,76 +65,81 @@ Implementação: `accounts/services/outbox.py`, modelo `EmailOutbox` em `account
 | `EMAIL_OUTBOX_MAX_ATTEMPTS` | 6 | Tentativas antes de marcar como `failed` |
 | `EMAIL_OUTBOX_LEASE_SECONDS` | 120 | Duração da reserva de uma mensagem |
 
-## 3. Rotinas agendadas
+## 3. Matriz de rotinas
 
-Cada rotina existe como `management command` (execução manual em ambiente
-restrito) e, quando aplicável, como endpoint HTTP acionado pelo cron da Vercel.
+| Rotina | Executor (código) | Gatilho | Frequência | Proteção | Falhas | Evidência do ambiente |
+|---|---|---|---|---|---|---|
+| Entrega imediata de e-mail | `deliver_pending_emails(limit=1)` dentro do processo web | `transaction.on_commit` após `enqueue_email` | A cada e-mail enfileirado | Roda dentro de requisição já autenticada | Exceção é registrada e a mensagem fica `pending` com recuo | Código apenas |
+| Reenvio de e-mails pendentes | Comando `send_pending_emails` ou endpoint `GET /api/cron/send-pending-emails/` (até 50 por execução, depois purga) | **Nenhum gatilho versionado.** Exige scheduler externo ou execução manual | Não definida no repositório; a documentação recomenda intervalo curto | Endpoint: `Authorization: Bearer <CRON_SECRET>` com `compare_digest`; apenas `GET`; 401 sem segredo | Falha por mensagem: recuo de 30s×2^n (máx. 1h); após 6 tentativas vira `failed` | **Não confirmada.** Verificar no painel da Vercel e em scheduler externo |
+| Remoção de cadastros pendentes | Comando `delete_expired_pending_accounts` ou `GET /api/cron/delete-expired-pending-accounts/` | Cron da Vercel em `vercel.json` | Diária, `0 3 * * *` (UTC) | Mesmo `CRON_SECRET` Bearer; só GET | Candidato com dado inesperado ou `ProtectedError` é ignorado; cada conta em transação própria | Agendamento **versionado**; execução real **não confirmada** (ver Settings > Cron Jobs) |
+| Limpeza de limites de autenticação | Comando `clear_expired_authentication_limits` | Manual | Sem agendamento | Execução em ambiente restrito | Sem retentativa | Sem endpoint nem cron; nenhuma execução esperada |
+| Encerramento automático de cotações | **Não existe** | Não há | Não há | Não se aplica | Não se aplica | Ver seção 5 |
 
-| Rotina | Command | Endpoint | Frequência |
-|---|---|---|---|
-| Remover cadastros pendentes | `delete_expired_pending_accounts` | `/api/cron/delete-expired-pending-accounts/` | Diária, 03:00 UTC (`vercel.json`) |
-| Reenviar e-mails pendentes e purgar antigos | `send_pending_emails [--limit N]` | `/api/cron/send-pending-emails/` | Intervalo curto (ver nota) |
-| Limpar janelas de limite de autenticação | `clear_expired_authentication_limits` | — | Manual/sob demanda |
+### 3.1 Quem consome a outbox
 
-> **Nota:** o `vercel.json` agenda hoje apenas a limpeza de cadastros. O reenvio de
-> e-mails precisa ser agendado em intervalo curto no ambiente de produção (cron
-> externo ou plano da Vercel compatível); sem isso, só a tentativa imediata pós-commit
-> ocorre e falhas de SMTP ficam pendentes.
+Consomem a `EmailOutbox` apenas: (1) o callback pós-commit no processo web, para a
+mensagem recém-criada; e (2) `deliver_pending_emails` chamado por
+`send_pending_emails` ou pelo endpoint de cron. Não há worker residente. Portanto,
+**sem scheduler externo apontando para o comando ou endpoint, mensagens cuja
+primeira tentativa falhou permanecem `pending` indefinidamente.** No repositório
+não há GitHub Actions (`django.yml` e `auto-author-assign.yml` não têm `schedule`),
+nem `compose.yaml` com cron, nem outro arquivo que agende esse reenvio.
 
-### 3.1 Remoção de cadastros pendentes
+### 3.2 Remoção de cadastros pendentes
 
 Implementação: `accounts/services/cleanup.py`. Remove contas inativas, sem e-mail
-confirmado, criadas há pelo menos **3 dias**, junto com a organização criada no
+confirmado, criadas há pelo menos 3 dias, junto com a organização criada no
 cadastro. Preserva superusuários, staff, contas verificadas, organizações
-verificadas ou com mais de um vínculo, e qualquer conta com dados operacionais
-associados (inclui `ProtectedError`). Cada candidato é processado em transação
-própria com bloqueio de linha.
+verificadas ou com mais de um vínculo e qualquer conta com dados operacionais.
 
-### 3.2 Reenvio de e-mails
+### 3.3 Segurança dos endpoints de cron
 
-Entrega até 50 mensagens vencidas por execução (`limit=50`) e depois purga registros
-com mais de 7 dias.
-
-### 3.3 Limites de autenticação
-
-Remove apenas contadores (`AuthenticationRateLimit`) já expirados, sem afetar
-janelas ativas.
-
-### Segurança dos endpoints de cron
-
-Implementação: `accounts/cron_views.py`.
-
-- Apenas `GET`; outros métodos retornam 405.
-- Exigem `Authorization: Bearer <CRON_SECRET>`, comparado com `secrets.compare_digest`.
-- Sem `CRON_SECRET` configurado ou com cabeçalho incorreto, retornam **401** e nada é executado.
-- `CRON_SECRET` deve ser *Sensitive* na Vercel, com pelo menos 16 caracteres.
-- A Vercel envia o cron apenas em Production e pode executar após o horário nominal.
+Implementação: `accounts/cron_views.py`. Apenas `GET` (outros métodos: 405).
+Exigem `Authorization: Bearer <CRON_SECRET>`; sem segredo configurado ou com
+cabeçalho incorreto respondem 401 e nada é executado. O valor do segredo nunca
+deve aparecer em capturas, logs ou documentação; use variável *Sensitive* na Vercel.
 
 ## 4. Tempo real (Django Channels)
 
 Implementação: `bidxchange/realtime.py`, `bidxchange/consumers.py`, `config/asgi.py`.
+Eventos são publicados em grupos somente após o commit, via `channels_redis`
+(`REDIS_URL`; `InMemoryChannelLayer` fora de produção), e controlados por
+`ENABLE_REALTIME`. Não é fila durável: eventos perdidos não são reenviados. Não
+executa rotina periódica.
 
-- Rota WebSocket `ws/atualizacoes/`.
-- Eventos são publicados em grupos (`user_*`, `organization_*`, `audience_*`) **somente
-  após o commit**, garantindo que a alteração já esteja visível.
-- Usado para avisar mudanças em recursos (ex.: cotação criada ou encerrada) e para
-  encerrar conexões quando o acesso à organização é revogado.
-- Controlado por `ENABLE_REALTIME`; em produção exige `REDIS_URL` (camada
-  `channels_redis`, com TLS). Fora de produção usa `InMemoryChannelLayer`.
-- **Não é durável:** eventos perdidos não são reenviados; a tela se atualiza ao recarregar.
+## 5. Encerramento de cotações: não há automação
 
-## 5. Fora de escopo atual
+Verificação no código:
 
-- Não há expiração automática de cotações: o encerramento (`CLOSED_WITHOUT_WINNER`,
-  `CANCELLED`) ocorre por ação de usuário.
-- Não há workers, filas de mensagens externas nem painel de monitoramento de jobs.
+- `close_quote` (`bidxchange/services/quotes.py`) é a **única** transição para
+  `CLOSED_WITHOUT_WINNER` ou `CANCELLED` e é chamada por ação de usuário.
+- Nenhum command, endpoint de cron, tarefa ou sinal altera o status de cotações
+  quando `closes_at` é atingido; `vercel.json` não agenda nada com esse fim.
+- Após `closes_at`, a cotação deixa de aceitar propostas apenas porque
+  `Quote.is_accepting_proposals` compara `closes_at` com o horário atual na leitura.
+  O campo `status` **continua `OPEN`** até alguém encerrar manualmente.
 
-## 6. Operação e diagnóstico
+Conclusão: **o sistema não encerra cotações automaticamente**. Ele bloqueia novas
+propostas depois do prazo, mas não muda o status nem notifica. Qualquer afirmação
+contrária exigiria uma rotina que não existe no repositório.
 
-- Mensagens `failed` e `last_error` (até 255 caracteres) indicam a causa da falha
-  de entrega; consulte pelo Admin ou banco, em ambiente restrito.
-- Falhas de envio são registradas em log (`WARNING`) apenas com o tipo da exceção.
+## 6. Situação da implantação real
+
+| Pergunta | Resposta com evidência |
+|---|---|
+| O cron diário de contas pendentes está ativo em produção? | **A confirmar.** Está no `vercel.json`; conferir em Vercel > Settings > Cron Jobs e nos logs |
+| Existe scheduler externo para `send-pending-emails`? | **Sem evidência no repositório.** Confirmar com o responsável pelo deploy; se não houver, declarar que o reenvio não está implantado |
+| Existe worker residente? | **Não.** Nenhum código ou configuração de worker (hospedagem serverless) |
+| `CRON_SECRET` está configurado em Production? | **A confirmar**, sem registrar o valor. Sem ele os endpoints respondem 401 |
+
+Pendência para fechar o cartão: registrar a confirmação (data, responsável e
+captura sem segredos) das linhas marcadas "A confirmar".
+
+## 7. Operação e diagnóstico
+
+- `EmailOutbox.status`, `attempts` e `last_error` (até 255 caracteres) indicam a
+  causa de falhas; consulte em ambiente restrito.
+- Falhas de envio geram log `WARNING` apenas com o tipo da exceção.
 - Execução manual: `python manage.py send_pending_emails`,
   `python manage.py delete_expired_pending_accounts`,
   `python manage.py clear_expired_authentication_limits`.
-- Conferir execuções do cron em **Vercel > Settings > Cron Jobs**.
