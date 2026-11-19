@@ -1,21 +1,22 @@
 LEAN CANVAS DO BIDXCHANGE
 Proposta revisada em 7 nov. 2026 com base no código develop 1aa8783.
-O conteúdo do quadro de origem ficou sem conferência. A revisão apresenta os nove blocos em texto, com hipóteses a verificar no piloto.
+O conteúdo do quadro de origem ficou sem conferência. A revisão apresenta os nove blocos em texto, com hipóteses a verificar no piloto. A atualização de 19 nov. 2026 incorpora o recorte de Araras (SP) e o levantamento de alternativas.
 
 1 PROBLEMA
-Orçamentos dispersos, comparação manual de condições e baixa visibilidade de demandas para fornecedores. Alternativas existentes: e-mail, telefone, planilha e ferramentas gerais de cotação.
+O relato institucional descreve a coleta dispersa de orçamentos e a comparação manual de condições. A visibilidade das demandas para fornecedores é uma hipótese a verificar. E-mail com planilha e Mercado Livre funcionam como substitutos em etapas da compra. A dispensa eletrônica do Compras.gov.br é referência de processo formal e o Bionexo é referência setorial de cotação B2B. Consulte a matriz para os recortes e limites.
 
 2 SEGMENTOS DE CLIENTES
-Equipes administrativas de instituições de ensino, APMs autorizadas e fornecedores. Perfil inicial a testar: instituições com cotações recorrentes e fornecedores aptos a atender na mesma região.
+Equipes administrativas de instituições de ensino, representantes de APMs autorizadas e fornecedores. O primeiro recorte é Araras (SP). Verificar o regime da compra e a autorização de cada instituição, além da aptidão e disponibilidade dos fornecedores de materiais de expediente e manutenção.
 
 3 PROPOSTA ÚNICA DE VALOR
-Concentrar demanda, propostas e decisão em um registro de cotação consultável pelas partes autorizadas.
+Concentrar a demanda, as propostas, a comparação por critérios e a decisão humana em um registro de cotação acessível conforme as permissões de cada parte. A matriz sustenta essa combinação no recorte educacional, sem evidência de vantagem exclusiva ou ganho de desempenho.
 
 4 SOLUÇÃO
 Publicação de cotações, envio de propostas, comparação de preço, prazo e condições, seleção humana e conversa privada após a seleção.
 
 5 CANAIS
 Aplicação web, demonstrações com instituições e contato direto com fornecedores do piloto. O efeito de cada canal sobre adesão é hipótese.
+A rodada inicial proposta dura quatro semanas e prevê até duas instituições, seis fornecedores convidados e quatro cotações simuladas, sem contratação. Trata-se de uma hipótese de capacidade e recrutamento. As metas SMART de três meses permanecem como referência do planejamento.
 
 6 FONTES DE RECEITA
 Assinatura institucional é hipótese de teste. Receita de operação e disposição a pagar seguem sem comprovação. O cenário base considera receita zero.
@@ -25,6 +26,7 @@ Infraestrutura, e-mail, suporte, manutenção e tempo da equipe. Separar desembo
 
 8 MÉTRICAS PRINCIPAIS
 Instituições com cotação publicada, fornecedores com proposta válida, cotações com seleção registrada, mediana de propostas válidas por cotação e tempo entre publicação e seleção. Excluir dados de teste e documentar a janela de apuração.
+Na rodada inicial, registrar o número de convidados por categoria, as desistências e o esforço de suporte. Conferir se cada categoria teve decisão documentada e se ao menos duas cotações simuladas receberam duas ou mais propostas válidas. O limiar é técnico e não substitui as exigências de compras reais.
 
 9 VANTAGEM DIFÍCIL DE COPIAR
 Em aberto. Um histórico útil e a adesão recorrente de instituições e fornecedores são hipóteses que dependem de evidência de uso.
@@ -32,3 +34,5 @@ Em aberto. Um histórico útil e a adesão recorrente de instituições e fornec
 Fontes
 MAURYA, Ash. What is a Lean Canvas? 22 fev. 2024. Disponível em: https://ashmaurya.com/blog/what-is-lean-canvas. Acesso em: 7 nov. 2026.
 BIDXCHANGE. Visão geral do produto. https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/1aa8783ff1d9ada526b765f3a04bc6244106cbea/README.md. Acesso em: 7 nov. 2026.
+Contexto, fontes regionais e critérios de piloto: ../Analise/ContextoRegionalEPiloto.md.
+Alternativas, fontes de produto e limites da comparação: ../Analise/MatrizComparativaDeCotacao.md.
