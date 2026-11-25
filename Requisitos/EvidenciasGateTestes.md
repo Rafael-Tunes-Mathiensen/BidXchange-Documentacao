@@ -34,3 +34,18 @@ O digest identifica a imagem do serviço PostgreSQL. A versão da imagem do runn
 ## Limites da evidência
 
 As execuções verificaram unitários e integração automatizada. Não há evidência nesses jobs de testes ponta a ponta em navegador real, percentual de cobertura, testes de carga ou desempenho, nem validação com usuários. Os registros de execução local da monografia têm procedência própria.
+
+
+## Auditoria complementar de 24 de novembro de 2026
+
+| Revisão | Django | JavaScript | Harness | Cobertura de linhas Python | Cobertura de ramificações Python |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| Base `34853e0` | 348 | 67 | 5 | 3.797/4.214 (90,10%) | 586/820 (71,46%) |
+| Revisão `a066601` da PR #91 | 380 | 69 | 10 | 3.839/4.214 (91,10%) | 610/820 (74,39%) |
+
+O perfil completo local da revisão da PR registrou 459 testes aprovados, sem falhas ou ignorados. A medição de cobertura Python excluiu os próprios testes e as migrações e não instrumentou subprocessos. O registro de saída local tem SHA-256 `4ce6214e04a0abee604ff9e89cf162bc2c8e0b3c7c5329a2be5175fa1a936cdb`. Os comandos, o ambiente e os limites da medição constam no [relatório versionado da auditoria][audit-24nov].
+
+Na consulta de 24 de novembro de 2026, a [PR #91][pr-91] exibia oito checks aprovados para `a066601`. A `develop` ainda apontava para `34853e0`. Os totais desta auditoria são de outra execução e não substituem os resultados das execuções #289 e #293. Permanecem sem registro aqui testes ponta a ponta em navegador real, testes de carga ou desempenho e validação com usuários.
+
+[audit-24nov]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/a066601cedda14b62330215c64fccc580a3e9305/docs/TEST_SUITE_AUDIT.md
+[pr-91]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange/pull/91
