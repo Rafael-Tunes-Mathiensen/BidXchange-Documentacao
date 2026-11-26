@@ -81,6 +81,7 @@ Para RNF01 e RNF02, a [configuração versionada][settings] habilita o tempo rea
 | CU09 Participar de cotação e CU09 Enviar proposta | CU09 Enviar ou atualizar proposta, vinculado ao RF07. O RF08 corresponde à comparação. |
 | CU12 Abrir cotação | CU12 Criar ou publicar cotação. |
 | Segunda ocorrência de CU12 para edição de cotação | CU13 Editar rascunho de cotação. A edição de cotação publicada permanece como lacuna do RF04. |
+| CU10 | Sem registro identificado. O [fluxo histórico de eventos][fluxo-historico] contém dois títulos CU09 e nenhum CU10. O identificador foi preservado como lacuna do histórico. |
 | CU21 Favoritar fornecedor e CU22 Desfavoritar fornecedor | CU21 Gerenciar fornecedores favoritos. |
 | CU03 Geração de relatórios | CU03 Consultar indicadores. Relatórios com filtros permanecem no escopo pretendido do RF21. |
 | Chat e notificações registrados como comportamentos associados | RF25/CU25 e RF26/CU26 documentam jornadas próprias da versão analisada. |
@@ -205,3 +206,4 @@ Os resultados são técnicos e limitados às verificações executadas. O RF07 c
 [bootstrap]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/34853e0/frontend/ui/bootstrap.scss
 [database]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/34853e0/docs/DATABASE.md
 [product]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange/blob/34853e0/PRODUCT.md
+[fluxo-historico]: https://github.com/Rafael-Tunes-Mathiensen/BidXchange-Documentacao/blob/b925515eebb8bfd529b9396a6bafe03f3f0e6261/CasosDeUso/FluxoDeEventosBxcCompleto.docx

@@ -10,7 +10,7 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from matplotlib.patches import FancyBboxPatch
 
-BLUE = '#1D4E89'; FILL = '#EAF1F9'; INK = '#1F2933'; GRAY = '#6B7280'; AMBER = '#B45309'
+BORDER = '#333333'; FILL = '#F2F2F2'; INK = '#000000'; GRAY = '#606060'; NOTE_BORDER = '#444444'
 W, H = 140, 134
 fig = plt.figure(figsize=(14, 13.4), dpi=100)
 ax = fig.add_axes([0, 0, 1, 1])
@@ -20,9 +20,9 @@ E = {}
 BW, BH = 24, 8
 
 def ent(key, cx, cy, text, w=BW, h=BH, assoc=False):
-    ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h, boxstyle='square,pad=0', fc=FILL, ec=BLUE, lw=2))
+    ax.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h, boxstyle='square,pad=0', fc=FILL, ec=BORDER, lw=2))
     if assoc:
-        ax.add_patch(FancyBboxPatch((cx - w / 2 + 0.9, cy - h / 2 + 0.9), w - 1.8, h - 1.8, boxstyle='square,pad=0', fc='none', ec=BLUE, lw=0.9))
+        ax.add_patch(FancyBboxPatch((cx - w / 2 + 0.9, cy - h / 2 + 0.9), w - 1.8, h - 1.8, boxstyle='square,pad=0', fc='none', ec=BORDER, lw=0.9))
     ax.text(cx, cy, text, ha='center', va='center', fontsize=9.6, color=INK, fontweight='bold', linespacing=1.15)
     E[key] = (cx, cy, w, h)
 
@@ -42,7 +42,7 @@ def link(a, sa, b, sb, ca, cb, label=None, offa=0.0, offb=0.0, via=None, lpos=0.
         ux, uy = dx / n, dy / n
         x = p[0] + ux * 3.0 - uy * 1.9 * side
         y = p[1] + uy * 3.0 + ux * 1.9 * side
-        ax.text(x, y, txt, ha='center', va='center', fontsize=8.6, color=BLUE, fontweight='bold', zorder=3)
+        ax.text(x, y, txt, ha='center', va='center', fontsize=8.6, color=INK, fontweight='bold', zorder=3)
     lab(pts[0], pts[1], ca, 1)
     lab(pts[-1], pts[-2], cb, -1)
     if label:
@@ -57,7 +57,7 @@ def link(a, sa, b, sb, ca, cb, label=None, offa=0.0, offb=0.0, via=None, lpos=0.
                 mx, my = p[0] + (q[0] - p[0]) * t, p[1] + (q[1] - p[1]) * t
                 break
             acc += L
-        ax.text(mx + ldx, my + ldy, label, ha='center', va='center', fontsize=8.4, color=GRAY, linespacing=1.15,
+        ax.text(mx + ldx, my + ldy, label, ha='center', va='center', fontsize=8.4, color=INK, linespacing=1.15,
                 bbox=dict(fc='white', ec='none', pad=0.6), zorder=2)
 
 # ---------------- entidades
@@ -92,9 +92,9 @@ link('org', 'b', 'cot', 't', '1', 'N', 'publica\n(instituição)', lpos=0.5, ldx
 link('cot', 'b', 'pro', 't', '1', 'N', 'recebe', offa=-4, offb=-4, lpos=0.5, ldx=-6)
 link('cot', 'b', 'pro', 't', '0..1', '0..1', 'vencedora', offa=4, offb=4, lpos=0.5, ldx=7)
 link('org', 'b', 'pro', 'r', '1', 'N', 'envia (fornecedor)', offa=14, offb=-2.5, via=[(102.5, 61.5)], lpos=0.4, ldx=0)
-link('pro', 'r', 'con', 'l', '0..1', '1', 'abre (só proposta\nselecionada)', offa=1.5, offb=1.5, ldx=6, ldy=5.4)
+link('pro', 'r', 'con', 'l', '1', '0..1', 'abre (só proposta\nselecionada)', offa=1.5, offb=1.5, ldx=6, ldy=5.4)
 link('con', 'b', 'msg', 't', '1', 'N', 'contém', ldx=6)
-link('cot', 'l', 'ava', 'l', '0..1', '1', 'avaliada em', offa=-3, offb=0, via=[(70, 81), (70, 44)], lpos=0.5, ldx=0)
+link('cot', 'l', 'ava', 'l', '1', '0..1', 'avaliada em', offa=-3, offb=0, via=[(70, 81), (70, 44)], lpos=0.5, ldx=0)
 link('cot', 'l', 'vot', 'r', '1', '0..N', 'tem', offa=3, offb=3, ldy=3.4)
 link('vin', 'b', 'par', 't', '1', 'N', 'é o vínculo', ldx=7)
 link('vot', 'b', 'opc', 't', '1', 'N', 'oferece', ldx=6)
@@ -109,14 +109,14 @@ ax.plot([3.5, 16 - BW / 2], [124, 124], color=INK, lw=1.5, zorder=1)
 for key in ('not', 'aud'):
     x, y, w, h = E[key]
     ax.plot([3.5, x - w / 2], [y, y], color=INK, lw=1.5, zorder=1)
-    ax.text(6.0, y + 1.9, 'N', fontsize=8.6, color=BLUE, fontweight='bold', ha='center', zorder=3)
-ax.text(6.3, 121.4, '1', fontsize=8.6, color=BLUE, fontweight='bold', ha='center')
-ax.text(1.0, 94, 'recebe', fontsize=8.2, color=GRAY, rotation=90, ha='center', va='center')
-ax.text(1.0, 74, 'gera', fontsize=8.2, color=GRAY, rotation=90, ha='center', va='center')
+    ax.text(6.0, y + 1.9, 'N', fontsize=8.6, color=INK, fontweight='bold', ha='center', zorder=3)
+ax.text(7.0, 121.4, '0..1', fontsize=8.6, color=INK, fontweight='bold', ha='center')
+ax.text(1.0, 94, 'recebe', fontsize=8.2, color=INK, rotation=90, ha='center', va='center')
+ax.text(1.0, 74, 'gera', fontsize=8.2, color=INK, rotation=90, ha='center', va='center')
 
-def note(x, y, w, h, text, color=AMBER, size=8.6):
+def note(x, y, w, h, text, color=NOTE_BORDER, size=8.6):
     ax.add_patch(FancyBboxPatch((x, y), w, h, boxstyle='round,pad=0,rounding_size=1.2', fc='white', ec=color, lw=1.3, ls=(0, (4, 3))))
-    ax.text(x + 1.5, y + h / 2, text, ha='left', va='center', fontsize=size, color=color, linespacing=1.35)
+    ax.text(x + 1.5, y + h / 2, text, ha='left', va='center', fontsize=size, color=INK, linespacing=1.35)
 
 note(2, 24, 66, 12.5, 'Restrições de integridade\n'
      'R1  Só proposta selecionada pode originar conversa.\n'
@@ -135,7 +135,7 @@ note(70, 10, 68, 19.5, 'Notas\n'
      '       criada (0..1). A notificação tem usuário e/ou organização como\n'
      '       destino. O evento de auditoria cita a entidade afetada por tipo\n'
      '       e identificador, sem chave estrangeira.', size=8.0, color=GRAY)
-ax.text(2, 15.5, 'Cardinalidade (mínima..máxima): 1 = exatamente um; 0..1 = opcional;\nN = um ou mais; 0..N = nenhum ou vários. Moldura dupla = entidade\nassociativa (resolve uma relação N para N entre duas entidades).',
-        fontsize=8.0, color=GRAY, ha='left', va='center', linespacing=1.35)
+ax.text(2, 15.5, 'Cardinalidade (mínima..máxima): 1 = exatamente um; 0..1 = opcional;\nN = muitos (mínimo não indicado); 0..N = nenhum ou vários.\nMoldura dupla = entidade associativa para uma relação de muitos para muitos.',
+        fontsize=8.0, color=INK, ha='left', va='center', linespacing=1.35)
 fig.savefig('ModeloConceitual.png', dpi=100, facecolor='white')
 print('ok')
