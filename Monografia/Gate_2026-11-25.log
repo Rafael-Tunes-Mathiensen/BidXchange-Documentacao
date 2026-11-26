@@ -1,0 +1,757 @@
+
+[Integridade do diff] > 'C:\Program Files\Git\cmd\git.EXE' diff --check --
+OK: Integridade do diff
+
+[Django system check] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' manage.py check
+System check identified no issues (0 silenced).
+OK: Django system check
+
+[Migrations pendentes] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' manage.py makemigrations --check --dry-run
+No changes detected
+OK: Migrations pendentes
+
+[Collectstatic em dry-run] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' manage.py collectstatic --dry-run --noinput --verbosity 0
+OK: Collectstatic em dry-run
+
+[Ruff lint] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' -m ruff check .
+All checks passed!
+OK: Ruff lint
+
+[Ruff format] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' -m ruff format --check .
+153 files already formatted
+OK: Ruff format
+
+[Testes do harness] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' -m unittest discover -s .agents/tests
+..
+[one] > one
+...
+----------------------------------------------------------------------
+Ran 5 tests in 0.007s
+
+OK
+OK: Testes do harness
+
+[Distribui��o Bootstrap] > 'C:\Program Files\nodejs\npm.CMD' run check:ui
+
+> check:ui
+> node frontend/build.mjs --check
+
+Verificado: bootstrap.min.css (74172 bytes)
+Verificado: bootstrap.min.js (26105 bytes)
+Verificado: LICENSE (1093 bytes)
+OK: Distribui��o Bootstrap
+
+[Stylelint] > 'C:\Program Files\nodejs\npm.CMD' run lint:styles
+
+> lint:styles
+> stylelint "static/ui/css/**/*.css" "accounts/static/accounts/css/**/*.css" "bidxchange/static/bidxchange/css/**/*.css"
+
+OK: Stylelint
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'accounts\static\accounts\js\home.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'accounts\static\accounts\js\password-visibility.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'accounts\static\accounts\js\signup-draft.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'bidxchange\static\bidxchange\js\comparison.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'bidxchange\static\bidxchange\js\proposal-wizard.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'bidxchange\static\bidxchange\js\quote-wizard.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'bidxchange\static\bidxchange\js\realtime.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'bidxchange\static\bidxchange\js\team.js'
+OK: Sintaxe JavaScript
+
+[Sintaxe JavaScript] > 'C:\Program Files\nodejs\node.EXE' --check 'static\ui\js\interactions.js'
+OK: Sintaxe JavaScript
+
+[Testes Django] > 'C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Scripts\python.exe' manage.py test
+Creating test database for alias 'default'...
+
+WARNING 2026-11-25 20:16:52,722 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,731 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,738 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,745 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,753 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,760 django.request Unprocessable Content: /conta/cadastro/instituicao/
+WARNING 2026-11-25 20:16:52,767 django.request Unprocessable Content: /conta/cadastro/instituicao/
+...WARNING 2026-11-25 20:16:53,453 django.request Unauthorized: /api/cron/delete-expired-pending-accounts/
+WARNING 2026-11-25 20:16:53,454 django.request Unauthorized: /api/cron/delete-expired-pending-accounts/
+WARNING 2026-11-25 20:16:53,454 django.request Unauthorized: /api/cron/delete-expired-pending-accounts/
+WARNING 2026-11-25 20:16:53,455 django.request Method Not Allowed: /api/cron/delete-expired-pending-accounts/
+......WARNING 2026-11-25 20:16:54,106 accounts.services.outbox Falha ao enviar e-mail e81bafc2-7d7e-447c-8183-f6263e351470 (tentativa 1): SMTPException
+WARNING 2026-11-25 20:16:54,116 accounts.services.outbox Falha ao enviar e-mail c74e669d-6b37-4c33-ba1f-27c5dc6c323b (tentativa 1): SMTPException
+...WARNING 2026-11-25 20:16:54,234 accounts.services.outbox Falha ao enviar e-mail 02cac947-5051-4860-9325-40eda5144b46 (tentativa 1): SMTPException
+WARNING 2026-11-25 20:16:54,239 accounts.services.outbox Falha ao enviar e-mail 02cac947-5051-4860-9325-40eda5144b46 (tentativa 2): SMTPException
+..WARNING 2026-11-25 20:16:54,260 accounts.services.outbox Falha ao enviar e-mail 3500d804-5013-44c4-b7d8-9d3f14c6fcc8 (tentativa 1): SMTPException
+..............................WARNING 2026-11-25 20:17:00,500 django.request Unprocessable Content: /conta/cadastro/instituicao/
+...WARNING 2026-11-25 20:17:00,929 django.request Unprocessable Content: /conta/cadastro/instituicao/
+.WARNING 2026-11-25 20:17:01,380 django.request Bad Request: /conta/confirmar-email/UWuNjbGWEd8yaDH2v1dVSxghaGmGGnvSUOIRSk1ZQLI/
+..............WARNING 2026-11-25 20:17:03,293 django.request Forbidden (Permission denied): /fornecedor/conta/perfil/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\profile.py", line 59, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+....WARNING 2026-11-25 20:17:05,157 django.request Unprocessable Content: /conta/cadastro/fornecedor/
+.......WARNING 2026-11-25 20:17:06,411 django.request Unprocessable Content: /conta/cadastro/fornecedor/
+.....WARNING 2026-11-25 20:17:09,724 django.request Bad Request: /conta/confirmar-email-organizacao/O9Y8QrIKUSNDa1QUgP3TPWpo1PHR33F8109aF6FE5O0/
+..WARNING 2026-11-25 20:17:12,324 django.request Bad Request: /conta/convites/m9Mm9s36W7lQKn78EUCHGQoapdby9EqJulzZsHd0zGk/
+....WARNING 2026-11-25 20:17:16,770 django.request Forbidden (Permission denied): /instituicao/conta/equipe/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 39, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 115, in post
+    self.require_team_management()
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 112, in require_team_management
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+......WARNING 2026-11-25 20:17:23,608 django.request Forbidden (Permission denied): /instituicao/conta/equipe/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 39, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 121, in post
+    return self.change_role()
+           ~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 208, in change_role
+    membership = team_service.change_member_role(
+        membership_id=self.request.POST.get("membership"),
+    ...<3 lines>...
+        ip_address=self.request.META.get("REMOTE_ADDR") or None,
+    )
+  File "C:\Program Files\Python314\Lib\contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 138, in change_member_role
+    membership = _get_mutable_membership(
+        membership_id=membership_id,
+        organization=organization,
+    )
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 130, in _get_mutable_membership
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:17:23,640 django.request Not Found: /instituicao/conta/equipe/
+WARNING 2026-11-25 20:17:23,650 django.request Forbidden (Permission denied): /instituicao/conta/equipe/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 39, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 125, in post
+    return self.reactivate_member()
+           ~~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 242, in reactivate_member
+    membership = team_service.set_member_active(
+        membership_id=self.request.POST.get("membership"),
+    ...<3 lines>...
+        ip_address=self.request.META.get("REMOTE_ADDR") or None,
+    )
+  File "C:\Program Files\Python314\Lib\contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 164, in set_member_active
+    membership = _get_mutable_membership(
+        membership_id=membership_id,
+        organization=organization,
+    )
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 130, in _get_mutable_membership
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:17:23,662 django.request Forbidden (Permission denied): /instituicao/conta/equipe/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 39, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 127, in post
+    return self.remove_member()
+           ~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\team.py", line 258, in remove_member
+    membership = team_service.remove_team_member(
+        membership_id=self.request.POST.get("membership"),
+    ...<2 lines>...
+        ip_address=self.request.META.get("REMOTE_ADDR") or None,
+    )
+  File "C:\Program Files\Python314\Lib\contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 190, in remove_team_member
+    membership = _get_mutable_membership(
+        membership_id=membership_id,
+        organization=organization,
+    )
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\team.py", line 130, in _get_mutable_membership
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..........WARNING 2026-11-25 20:17:34,199 django.request Not Found: /instituicao/mensagens/48ecafdf-dfe3-440b-a72a-3664296eb692/
+...WARNING 2026-11-25 20:17:36,740 django.request Forbidden (Permission denied): /instituicao/mensagens/457016fa-3da6-4f08-aad0-901773468ec3/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+...WARNING 2026-11-25 20:17:39,372 django.request Bad Request: /administracao/chamados/
+...WARNING 2026-11-25 20:17:41,971 django.request Bad Request: /administracao/chamados/
+.WARNING 2026-11-25 20:17:42,859 django.request Bad Request: /administracao/chamados/
+.....WARNING 2026-11-25 20:17:47,103 django.request Forbidden (Permission denied): /administracao/chamados/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\workspace.py", line 112, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..WARNING 2026-11-25 20:17:48,866 django.request Bad Request: /administracao/chamados/
+.WARNING 2026-11-25 20:17:49,703 django.request Bad Request: /administracao/chamados/
+..WARNING 2026-11-25 20:17:51,366 django.request Forbidden (Permission denied): /administracao/chamados/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\workspace.py", line 112, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.....WARNING 2026-11-25 20:17:54,711 django.request Forbidden (Permission denied): /fornecedor/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:17:54,725 django.request Forbidden (Permission denied): /instituicao/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..WARNING 2026-11-25 20:17:55,404 django.request Method Not Allowed (GET): /instituicao/notificacoes/531c9bd5-ebcd-43f3-b099-36f830737a0e/abrir/
+WARNING 2026-11-25 20:17:55,409 django.request Method Not Allowed (HEAD): /instituicao/notificacoes/531c9bd5-ebcd-43f3-b099-36f830737a0e/abrir/
+...WARNING 2026-11-25 20:17:55,526 django.request Not Found: /instituicao/notificacoes/17add91c-7140-4dfa-b433-ed0afae77e75/abrir/
+WARNING 2026-11-25 20:17:55,534 django.request Not Found: /instituicao/notificacoes/404fa02d-767d-4ea6-858e-38e4ad54b2c6/abrir/
+.WARNING 2026-11-25 20:17:55,570 django.security.csrf Forbidden (CSRF token missing.): /instituicao/notificacoes/531c9bd5-ebcd-43f3-b099-36f830737a0e/abrir/
+WARNING 2026-11-25 20:17:55,573 django.security.csrf Forbidden (CSRF token from POST has incorrect length.): /instituicao/notificacoes/531c9bd5-ebcd-43f3-b099-36f830737a0e/abrir/
+WARNING 2026-11-25 20:17:55,574 django.security.csrf Forbidden (CSRF token from POST incorrect.): /instituicao/notificacoes/531c9bd5-ebcd-43f3-b099-36f830737a0e/abrir/
+......WARNING 2026-11-25 20:17:55,833 django.request Not Found: /admin/
+WARNING 2026-11-25 20:17:55,847 django.request Not Found: /admin/
+WARNING 2026-11-25 20:17:55,856 django.request Not Found: /admin/
+..WARNING 2026-11-25 20:17:55,876 django.request Not Found: /rota-que-nao-existe/
+.WARNING 2026-11-25 20:17:55,891 django.request Method Not Allowed (POST): /health/
+..........WARNING 2026-11-25 20:17:59,526 django.request Method Not Allowed (GET): /conta/sair/
+......WARNING 2026-11-25 20:18:02,974 django.request Forbidden (Permission denied): /administracao/relatorios/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\workspace.py", line 112, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..............WARNING 2026-11-25 20:18:06,356 django.security.csrf Forbidden (CSRF cookie not set.): /instituicao/propostas/comparar/a372818e-add9-4606-9a39-a96b67e88811/criterios/
+...WARNING 2026-11-25 20:18:06,641 django.request Forbidden (Permission denied): /instituicao/propostas/comparar/b41cab76-e16e-4442-8fb9-52af6c87f4c9/criterios/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\proposals.py", line 323, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.WARNING 2026-11-25 20:18:06,677 django.request Bad Request: /instituicao/propostas/comparar/a68879fe-c683-4dbd-a926-82944a0cd7e7/criterios/
+WARNING 2026-11-25 20:18:06,688 django.request Bad Request: /instituicao/propostas/comparar/a68879fe-c683-4dbd-a926-82944a0cd7e7/criterios/
+WARNING 2026-11-25 20:18:06,700 django.request Bad Request: /instituicao/propostas/comparar/a68879fe-c683-4dbd-a926-82944a0cd7e7/criterios/
+.....WARNING 2026-11-25 20:18:06,978 django.request Forbidden (Permission denied): /instituicao/propostas/comparar/6ed7088c-341d-473e-9e94-d1d72911508b/criterios/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.....WARNING 2026-11-25 20:18:09,606 django.request Not Found: /fornecedor/oportunidades/11d698ca-04f1-47f2-a984-1d9b67f08aa8/
+WARNING 2026-11-25 20:18:09,613 django.request Not Found: /fornecedor/propostas/enviar/11d698ca-04f1-47f2-a984-1d9b67f08aa8/
+.WARNING 2026-11-25 20:18:09,651 django.request Unprocessable Content: /fornecedor/propostas/enviar/c44dfeef-b3d8-4fe9-b070-1d67a3b0449c/
+....WARNING 2026-11-25 20:18:09,845 django.security.csrf Forbidden (CSRF cookie not set.): /fornecedor/propostas/enviar/1a7d2d2c-0f3e-47ae-a3c1-4d14c427cc94/
+WARNING 2026-11-25 20:18:09,876 django.request Forbidden (Permission denied): /fornecedor/propostas/enviar/1a7d2d2c-0f3e-47ae-a3c1-4d14c427cc94/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\proposals.py", line 84, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.WARNING 2026-11-25 20:18:09,920 django.security.csrf Forbidden (CSRF token missing.): /fornecedor/propostas/enviar/be3ba605-7c87-413e-ab37-2e1575db57a6/
+.WARNING 2026-11-25 20:18:09,962 django.security.csrf Forbidden (CSRF token missing.): /fornecedor/propostas/enviar/5ea992b1-013b-4ff1-a6b1-ae8ad199ac29/
+.WARNING 2026-11-25 20:18:10,004 django.security.csrf Forbidden (CSRF token missing.): /fornecedor/propostas/enviar/194e3454-19f3-487e-8f0f-59b7afd94701/
+WARNING 2026-11-25 20:18:10,005 django.security.csrf Forbidden (CSRF token from POST incorrect.): /fornecedor/propostas/enviar/194e3454-19f3-487e-8f0f-59b7afd94701/
+...WARNING 2026-11-25 20:18:10,125 django.request Not Found: /fornecedor/oportunidades/4ef96cf1-b191-44b9-bd5c-b2b83836ff7f/
+WARNING 2026-11-25 20:18:10,131 django.request Not Found: /fornecedor/propostas/enviar/4ef96cf1-b191-44b9-bd5c-b2b83836ff7f/
+WARNING 2026-11-25 20:18:10,138 django.request Not Found: /fornecedor/propostas/enviar/4ef96cf1-b191-44b9-bd5c-b2b83836ff7f/
+.WARNING 2026-11-25 20:18:10,173 django.request Not Found: /fornecedor/propostas/enviar/c2a8aab3-e75e-473d-b955-b9c068fb3c87/
+.WARNING 2026-11-25 20:18:10,216 django.request Unprocessable Content: /fornecedor/propostas/enviar/932d021d-1388-49f0-8f3c-93d755c7dcab/
+..WARNING 2026-11-25 20:18:10,315 django.request Forbidden (Permission denied): /fornecedor/propostas/enviar/9c0c6787-733c-4bb1-9194-eb80a08e4396/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\proposals.py", line 84, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.....WARNING 2026-11-25 20:18:10,604 django.request Unprocessable Content: /fornecedor/propostas/enviar/55398325-42af-4d62-9d5d-5661049da44b/
+......WARNING 2026-11-25 20:18:10,820 django.request Method Not Allowed (GET): /instituicao/fornecedores/favoritos/3737dcdf-7d36-4ebb-a445-902f6bc941eb/remover/
+WARNING 2026-11-25 20:18:10,833 django.request Forbidden (Permission denied): /instituicao/fornecedores/favoritos/3737dcdf-7d36-4ebb-a445-902f6bc941eb/remover/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.......................ERROR 2026-11-25 20:18:13,457 django.request Internal Server Error: /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 103, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 157, in post
+    quote = quote_service.create_quote(
+        institution=self.membership.organization,
+    ...<3 lines>...
+        ip_address=request.META.get("REMOTE_ADDR") or None,
+    )
+  File "C:\Program Files\Python314\Lib\contextlib.py", line 85, in inner
+    return func(*args, **kwds)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\services\quotes.py", line 47, in create_quote
+    record_audit(
+    ~~~~~~~~~~~~^
+        actor=actor,
+        ^^^^^^^^^^^^
+    ...<4 lines>...
+        ip_address=ip_address,
+        ^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Program Files\Python314\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python314\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Program Files\Python314\Lib\unittest\mock.py", line 1241, in _execute_mock_call
+    raise effect
+RuntimeError
+.......WARNING 2026-11-25 20:18:13,718 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 102, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:13,722 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 102, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:13,728 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 102, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:13,737 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 102, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+......WARNING 2026-11-25 20:18:14,009 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:14,014 django.request Forbidden (Permission denied): /instituicao/cotacoes/nova/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..........WARNING 2026-11-25 20:18:18,573 django.request Not Found: /fornecedor/propostas/enviar/94606c0a-3392-4ace-8284-07e9ea5a2ff9/
+..WARNING 2026-11-25 20:18:22,213 django.request Forbidden (Permission denied): /instituicao/cotacoes/96a462da-8448-40db-b398-9648bffcd261/encerrar/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 395, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..WARNING 2026-11-25 20:18:25,508 django.request Forbidden (Permission denied): /instituicao/cotacoes/9e406e93-0c74-4daf-9db0-97cfcc0bd0f3/encerrar/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 395, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:25,522 django.request Forbidden (Permission denied): /instituicao/cotacoes/9e406e93-0c74-4daf-9db0-97cfcc0bd0f3/encerrar/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\contrib\auth\mixins.py", line 74, in dispatch
+    return super().dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 143, in dispatch
+    return handler(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\quotes.py", line 395, in post
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+WARNING 2026-11-25 20:18:25,536 django.request Forbidden (Permission denied): /instituicao/cotacoes/9e406e93-0c74-4daf-9db0-97cfcc0bd0f3/encerrar/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+..WARNING 2026-11-25 20:18:28,852 django.request Forbidden (Permission denied): /instituicao/fornecedores/favoritos/e48b4016-3089-4446-b216-00ee4e8afaae/alternar/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 113, in wrapped
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.........WARNING 2026-11-25 20:18:44,615 django.request Not Found: /fornecedor/propostas/45ba7b96-92ad-46db-9e59-014a561c60c2/
+..WARNING 2026-11-25 20:18:47,979 django.request Forbidden (Permission denied): /instituicao/fornecedores/avaliacoes/201879d1-ff32-4be5-8555-12b2cef5edc8/
+Traceback (most recent call last):
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\exception.py", line 56, in inner
+    response = get_response(request)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\core\handlers\base.py", line 199, in _get_response
+    response = wrapped_callback(request, *callback_args, **callback_kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\routing.py", line 116, in wrapped
+    return view_func(request, *args, **kwargs)
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-runtime\Lib\site-packages\django\views\generic\base.py", line 105, in view
+    return self.dispatch(request, *args, **kwargs)
+           ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Tuneco\Documents\ChatGPT\BidXchange\.venv\test-audit-baseline\bidxchange\views\proposal_review.py", line 85, in dispatch
+    raise PermissionDenied
+django.core.exceptions.PermissionDenied
+.WARNING 2026-11-25 20:18:49,638 django.request Not Found: /instituicao/fornecedores/avaliacoes/bf8ae06d-f937-425c-8d92-c4b5e931caaf/
+...WARNING 2026-11-25 20:18:51,330 django.request Bad Request: /conta/endereco/cep/
+WARNING 2026-11-25 20:18:51,331 django.request Bad Request: /conta/endereco/cep/
+WARNING 2026-11-25 20:18:51,331 django.request Bad Request: /conta/endereco/cep/
+WARNING 2026-11-25 20:18:51,331 django.request Bad Request: /conta/endereco/cep/
+WARNING 2026-11-25 20:18:51,332 django.request Method Not Allowed (POST): /conta/endereco/cep/
+..WARNING 2026-11-25 20:18:51,334 django.request Not Found: /conta/endereco/cep/
+ERROR 2026-11-25 20:18:51,335 django.request Service Unavailable: /conta/endereco/cep/
+.WARNING 2026-11-25 20:18:51,336 django.request Too Many Requests: /conta/endereco/cep/
+....................................................................
+----------------------------------------------------------------------
+Ran 348 tests in 146.812s
+
+OK
+Destroying test database for alias 'default'...
+
+Found 348 test(s).
+System check identified no issues (0 silenced).
+Conta administradora atualizada: admin@bidxchange.local
+Conta Etec criada: etec@bidxchange.local
+Conta Nestl� criada: nestle@bidxchange.local
+Superusu�rio admin@example.com criado.
+OK: Testes Django
+
+[Testes JavaScript] > 'C:\Program Files\nodejs\npm.CMD' run test:ui
+
+> test:ui
+> node --test bidxchange/tests/js/*.test.cjs
+
+✔ notificações e toast usam POST com CSRF e botões separados (162.7296ms)
+✔ não envia token para destinos externos, inválidos ou com credenciais (27.0903ms)
+✔ sem token disponível mantém aviso textual sem formulário desprotegido (16.0196ms)
+✔ formata durante a digitação, preserva centavos e permite editar no meio (172.7737ms)
+✔ voltar e editar preserva todos os campos; revisão usa texto seguro (59.8251ms)
+✔ bloqueia avanço e envio prematuro; destaca a etapa e foca erro (71.5412ms)
+✔ rejeita zero, negativos, valor excessivo e entrega além do prazo (51.9197ms)
+✔ abre etapa do erro retornado em HTML e mantém os dados iniciais (41.3834ms)
+✔ erro assíncrono revela campo oculto; falha de rede permite nova tentativa (52.0018ms)
+✔ avanço válido remove o aviso de validação cliente após corrigir campos (29.9068ms)
+▶ validação e avanço preservam avisos do servidor, rede e CSRF
+  ✔ html (30.9725ms)
+  ✔ server (37.3547ms)
+  ✔ network (35.4196ms)
+  ✔ csrf (39.7172ms)
+✔ validação e avanço preservam avisos do servidor, rede e CSRF (144.402ms)
+✔ melhoria progressiva mostra uma etapa e mantém envio convencional sem estrutura completa (470.2827ms)
+✔ avanço valida campos, mantém ajuda acessível e permite voltar sem perder valores (91.3233ms)
+✔ indicadores não pulam campos obrigatórios e Enter avança sem publicar (64.8902ms)
+✔ salva apenas os nove campos e recupera a etapa em recarga, isolando usuário e organização (55.2227ms)
+✔ estado de outra organização não é restaurado (19.5954ms)
+✔ POST inválido preserva dados do servidor e abre o primeiro erro com foco (26.089ms)
+✔ dados expirados, corrompidos e com esquema inválido não quebram o assistente (99.8503ms)
+✔ recupera as cinco etapas antigas nas três novas sem perder campos ou identidade (98.3538ms)
+✔ pedido exige descrição e quantidade antes dos prazos e da revisão (35.4703ms)
+✔ armazenamento indisponível informa o limite e ainda permite navegar e enviar (26.9513ms)
+✔ unidade personalizada é obrigatória somente para Outra e aparece como texto na revisão (34.7413ms)
+✔ prazo mínimo e entrega anterior impedem avanço e envio, sem prazo máximo (54.3185ms)
+✔ rascunho e publicação enviam somente na revisão e mantêm progresso até confirmação do servidor (69.6599ms)
+✔ confirmação antiga não apaga progresso mais recente e cada edição renova sua identificação (25.8529ms)
+✔ confirmação processada remove apenas seu token da URL preservando filtros e fragmento (8.7564ms)
+✔ voltar pelo cache após sucesso não ressuscita nem reenvia a cotação concluída (32.7889ms)
+✔ voltar a um envio antigo recupera o progresso novo sem sobrescrevê-lo (23.6506ms)
+✔ histórico sem BFCache limpa campos concluídos restaurados pelo navegador após pageshow (27.81ms)
+✔ histórico sem BFCache prioriza progresso válido sobre valores nativos antigos (34.3241ms)
+✔ retorno a POST inválido da tentativa atual preserva valores e mensagens do servidor (20.4096ms)
+✔ retorno histórico a POST antigo preserva a tentativa mais recente antes de qualquer salvamento (25.803ms)
+✔ BFCache de POST inválido também recupera nova tentativa iniciada depois (32.4036ms)
+✔ validação de prazo segue o fuso do servidor, independente do navegador (74.3776ms)
+✔ recusa 59 minutos, aceita uma hora exata e não corrige o horário escolhido (40.2275ms)
+✔ cancelar descarte mantém tudo; confirmar limpa dados e não recria progresso ao sair (23.6916ms)
+✔ envia heartbeat e aceita o retorno do servidor (170.6083ms)
+✔ o template associa lista e histórico a IDs distintos do mesmo recurso (30.9502ms)
+✔ atualiza lista e histórico separadamente, preservando o rascunho e seu foco (34.573ms)
+✔ preserva região focada sem impedir a atualização das outras (34.207ms)
+✔ não substitui um formulário editado enquanto a resposta estava pendente (31.6874ms)
+✔ acompanha formulários inseridos por atualizações anteriores (20.8659ms)
+✔ preserva rolagem de leitura e acompanha mensagens apenas quando estava no fim (30.6212ms)
+✔ mantém regiões antigas sem ID quando o recurso é único (14.859ms)
+✔ ignora substituições ausentes ou ambíguas em vez de duplicar componentes (23.4124ms)
+✔ preserva os componentes quando a atualização falha (12.8354ms)
+✔ distingue formulário expirado de permissão negada e preserva o preenchimento (19.3152ms)
+✔ single-page registration keeps all sections visible and focuses the first invalid field (174.0862ms)
+✔ CEP mask, CNPJ mask and address fields are retained in safe draft without passwords (36.0146ms)
+✔ lookup preserves edits made while waiting and ignores stale CEP response (42.5892ms)
+✔ lookup error leaves manual entry available, then backend error focuses CEP without clearing data (54.1977ms)
+✔ invalid or incomplete CEP prevents sending registration even when submit is triggered directly (42.5519ms)
+✔ password feedback starts empty and lists only unmet rules while typing (27.4333ms)
+✔ password similarity updates when personal data changes and confirmation errors disappear when corrected (21.1202ms)
+✔ backend password rules appear as a compact list without clearing the entered password (26.6474ms)
+✔ supplier registration starts on the details step (151.5993ms)
+✔ continue validates only the details step before showing categories (75.2648ms)
+✔ pressing Enter on the details step advances instead of submitting (37.5471ms)
+✔ final step requires a category or the other option (70.0486ms)
+✔ category choices are kept in the safe draft and restored (64.1662ms)
+✔ backend errors on a details field return the user to the first step (38.5821ms)
+✔ ajuda abre o guia e leva o foco ao resumo, sem mudar a página (146.9892ms)
+✔ somente um gerenciamento fica aberto e Escape devolve o foco (20.4769ms)
+ℹ tests 67
+ℹ suites 0
+ℹ pass 67
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 9724.4161
+OK: Testes JavaScript
+
+Perfil full conclu�do.
